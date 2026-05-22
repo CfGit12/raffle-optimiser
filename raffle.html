@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raffle Optimiser</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0f;
+      --surface:   #161618;
+      --border:    #2a2a2e;
+      --gold:      #c9a84c;
+      --gold-dim:  #7a6330;
+      --green:     #4caf7d;
+      --text:      #e8e6e0;
+      --muted:     #7a7870;
+      --peak-bg:   #1a1a10;
+      --peak-gold: #ffe566;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* subtle noise texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    /* ── Header ── */
+    header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+
+    .ticket-icon {
+      font-size: 2rem;
+      letter-spacing: -2px;
+      display: block;
+      margin-bottom: 0.75rem;
+      opacity: 0.8;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 900;
+      line-height: 1;
+      color: var(--gold);
+      letter-spacing: -1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Inputs ── */
+    .inputs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    label {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .prefix {
+      position: absolute;
+      left: 0.9rem;
+      color: var(--gold-dim);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    input[type=number] {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 1rem;
+      padding: 0.7rem 0.9rem 0.7rem 1.8rem;
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    input[type=number]:focus {
+      outline: none;
+      border-color: var(--gold-dim);
+    }
+
+    input.no-prefix {
+      padding-left: 0.9rem;
+    }
+
+    /* ── Summary cards ── */
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .summary.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+    }
+
+    .card-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .card-value {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--gold);
+    }
+
+    .card-value.green { color: var(--green); }
+
+    /* ── Table ── */
+    .table-wrap {
+      overflow-x: auto;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s 0.1s, transform 0.3s 0.1s;
+    }
+
+    .table-wrap.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    thead tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      text-align: right;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 400;
+      white-space: nowrap;
+    }
+
+    th:first-child { text-align: left; }
+
+    td {
+      text-align: right;
+      padding: 0.55rem 0.8rem;
+      border-bottom: 1px solid #1c1c1e;
+      white-space: nowrap;
+      color: #c8c4bc;
+    }
+
+    td:first-child { text-align: left; }
+
+    tr.peak-row td {
+      background: var(--peak-bg);
+      color: var(--peak-gold);
+      font-weight: 500;
+    }
+
+    tr.peak-row td:last-child {
+      color: var(--gold);
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--gold);
+      color: #0e0e0f;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.45rem;
+      border-radius: 2px;
+      margin-left: 0.5rem;
+      font-weight: 500;
+      vertical-align: middle;
+    }
+
+    .pct-label {
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    /* ── Formula ── */
+    .formula {
+      margin-top: 2rem;
+      padding: 1rem 1.2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity 0.3s 0.2s;
+    }
+
+    .formula.visible { opacity: 1; }
+    .formula span { color: var(--gold-dim); }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 1rem; opacity: 0.3; }
+    .empty.no-entry { color: #c0504d; }
+    .empty.no-entry .empty-icon { opacity: 0.6; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="ticket-icon">🎟</span>
+    <h1>Raffle Optimiser</h1>
+    <p class="subtitle">Find the optimal number of tickets to maximise expected profit</p>
+  </header>
+
+  <div class="inputs">
+    <div class="field">
+      <label for="prize">Prize Value</label>
+      <div class="input-wrap">
+        <span class="prefix">£</span>
+        <input type="number" id="prize" min="1" step="any" placeholder="500">
+      </div>
+    </div>
+    <div class="field">
+      <label for="sold">Tickets Already Sold</label>
+      <div class="input-wrap">
+        <span class="prefix">#</span>
+        <input type="number" id="sold" min="0" step="1" placeholder="99">
+      </div>
+    </div>
+    <div class="field">
+      <label for="cost">Your Ticket Cost</label>
+      <div class="input-wrap">
+        <span class="prefix">£</span>
+        <input type="number" id="cost" min="0.01" step="any" placeholder="0.80">
+      </div>
+    </div>
+  </div>
+
+  <div class="summary" id="summary">
+    <div class="card">
+      <div class="card-label">Optimal Tickets</div>
+      <div class="card-value" id="s-optimal">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total Cost</div>
+      <div class="card-value" id="s-cost">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Win Probability</div>
+      <div class="card-value" id="s-prob">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Expected Profit</div>
+      <div class="card-value green" id="s-profit">—</div>
+    </div>
+  </div>
+
+  <div class="table-wrap" id="table-wrap">
+    <div class="empty">
+      <span class="empty-icon">🎲</span>
+      Enter prize value, tickets sold, and ticket cost above to see results.
+    </div>
+  </div>
+
+  <div class="formula" id="formula"></div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  const inputs = ['prize','sold','cost'].map(id => $(id));
+  inputs.forEach(el => el.addEventListener('input', calculate));
+
+  function fmt(n, dp=2) {
+    return '£' + n.toFixed(dp);
+  }
+
+  function calculate() {
+    const P = parseFloat($('prize').value);
+    const s = parseFloat($('sold').value);
+    const c = parseFloat($('cost').value);
+
+    const summary = $('summary');
+    const tableWrap = $('table-wrap');
+    const formulaEl = $('formula');
+
+    if (isNaN(P) || isNaN(s) || isNaN(c) || P <= 0 || s < 0 || c <= 0) {
+      summary.classList.remove('visible');
+      tableWrap.classList.remove('visible');
+      formulaEl.classList.remove('visible');
+      tableWrap.innerHTML = `<div class="empty"><span class="empty-icon">🎲</span>Enter prize value, tickets sold, and ticket cost above to see results.</div>`;
+      return;
+    }
+
+    const rawN   = Math.sqrt((P * s) / c) - s;
+    const profit = n => (P * n / (s + n)) - (c * n);
+    const ev     = n => profit(n) / n;
+    const chance = n => n / (s + n);
+
+    // If even 1 ticket has negative EV, this raffle isn't worth entering
+    if (rawN <= 0 || profit(1) <= 0) {
+      summary.classList.remove('visible');
+      formulaEl.classList.remove('visible');
+      tableWrap.innerHTML = `<div class="empty no-entry">
+        <span class="empty-icon">🚫</span>
+        There is no positive expected outcome for this raffle.<br>
+        The prize is too small relative to the ticket cost and competition — don't enter.
+      </div>`;
+      tableWrap.classList.add('visible');
+      return;
+    }
+
+    const optN  = Math.round(rawN);
+    const peakP = profit(optN);
+
+    // Summary cards
+    $('s-optimal').textContent = optN;
+    $('s-cost').textContent    = fmt(c * optN);
+    $('s-prob').textContent    = (chance(optN) * 100).toFixed(2) + '%';
+    $('s-profit').textContent  = fmt(peakP);
+    summary.classList.add('visible');
+
+    // Build row set: optimal + 5% decrements
+    const seen = new Set();
+    const rows = [];
+
+    const addRow = (n, label, pct) => {
+      if (n < 1 || seen.has(n)) return;
+      seen.add(n);
+      rows.push({ n, label, pct });
+    };
+
+    addRow(optN, 'optimal', 100);
+
+    for (let pct = 95; pct >= 0; pct -= 5) {
+      const target = peakP * (pct / 100);
+      let bestN = 1, bestDiff = Infinity;
+      for (let n = optN - 1; n >= 1; n--) {
+        const diff = Math.abs(profit(n) - target);
+        if (diff < bestDiff) { bestDiff = diff; bestN = n; }
+        if (profit(n) < target - 1) break;
+      }
+      addRow(bestN, pct + '% of peak', pct);
+    }
+
+    rows.sort((a, b) => b.n - a.n);
+
+    // Render table
+    let html = `<table>
+      <thead><tr>
+        <th>Tickets</th>
+        <th>Cost</th>
+        <th>Win Chance</th>
+        <th>Exp. Return</th>
+        <th>Exp. Profit</th>
+        <th>EV / Ticket</th>
+        <th></th>
+      </tr></thead><tbody>`;
+
+    for (const { n, label, pct } of rows) {
+      const isPeak = pct === 100;
+      html += `<tr class="${isPeak ? 'peak-row' : ''}">
+        <td>${n}</td>
+        <td>${fmt(c * n)}</td>
+        <td>${(chance(n) * 100).toFixed(2)}%</td>
+        <td>${fmt(P * chance(n))}</td>
+        <td>${fmt(profit(n))}</td>
+        <td>${fmt(ev(n), 4)}</td>
+        <td>${isPeak
+          ? '<span class="badge">optimal</span>'
+          : `<span class="pct-label">${label}</span>`
+        }</td>
+      </tr>`;
+    }
+
+    html += '</tbody></table>';
+    tableWrap.innerHTML = html;
+    tableWrap.classList.add('visible');
+
+    // Formula
+    formulaEl.innerHTML = `n = √(P × s / c) − s &nbsp;=&nbsp; √(<span>${P} × ${s} / ${c}</span>) − ${s} &nbsp;=&nbsp; <span>${rawN.toFixed(4)}</span> &nbsp;≈&nbsp; <span>${optN}</span>`;
+    formulaEl.classList.add('visible');
+  }
+</script>
+</body>
+</html>
