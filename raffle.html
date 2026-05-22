@@ -9,26 +9,26 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #0e0e0f;
-      --surface:   #161618;
-      --border:    #2a2a2e;
-      --gold:      #c9a84c;
-      --gold-dim:  #7a6330;
-      --green:     #4caf7d;
-      --text:      #e8e6e0;
-      --muted:     #7a7870;
-      --peak-bg:   #1a1a10;
+      --bg:        #0c0c0d;
+      --surface:   #18181b;
+      --border:    #323238;
+      --gold:      #f0c040;
+      --gold-dim:  #a07820;
+      --green:     #5ddc96;
+      --blue:      #70b8f0;
+      --text:      #f2f0e8;
+      --muted:     #9e9a90;
+      --peak-bg:   #1e1c08;
       --peak-gold: #ffe566;
     }
 
     html, body {
-      height: 100%;
+      min-height: 100%;
       background: var(--bg);
       color: var(--text);
       font-family: 'DM Mono', monospace;
     }
 
-    /* subtle noise texture */
     body::before {
       content: '';
       position: fixed;
@@ -41,25 +41,18 @@
     .wrap {
       position: relative;
       z-index: 1;
-      max-width: 860px;
+      max-width: 1000px;
       margin: 0 auto;
       padding: 3rem 1.5rem 5rem;
     }
 
-    /* ── Header ── */
     header {
-      margin-bottom: 3rem;
+      margin-bottom: 2.5rem;
       border-bottom: 1px solid var(--border);
       padding-bottom: 2rem;
     }
 
-    .ticket-icon {
-      font-size: 2rem;
-      letter-spacing: -2px;
-      display: block;
-      margin-bottom: 0.75rem;
-      opacity: 0.8;
-    }
+    .ticket-icon { font-size: 2rem; display: block; margin-bottom: 0.75rem; opacity: 0.8; }
 
     h1 {
       font-family: 'Playfair Display', serif;
@@ -78,12 +71,25 @@
       text-transform: uppercase;
     }
 
+    /* ── Section labels ── */
+    .section-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.75rem;
+      margin-top: 1.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--gold-dim);
+      opacity: 0.85;
+    }
+
     /* ── Inputs ── */
     .inputs {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 1rem;
-      margin-bottom: 2.5rem;
+      margin-bottom: 0.5rem;
     }
 
     .field {
@@ -93,10 +99,10 @@
     }
 
     label {
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: #c8b878;
     }
 
     .input-wrap {
@@ -108,6 +114,14 @@
     .prefix {
       position: absolute;
       left: 0.9rem;
+      color: var(--gold-dim);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    .suffix {
+      position: absolute;
+      right: 0.9rem;
       color: var(--gold-dim);
       font-size: 0.9rem;
       pointer-events: none;
@@ -135,25 +149,42 @@
       border-color: var(--gold-dim);
     }
 
-    input.no-prefix {
-      padding-left: 0.9rem;
+    input.has-suffix { padding-right: 2rem; }
+    input.no-prefix  { padding-left: 0.9rem; }
+
+    /* ── Zone banner ── */
+    .zone-banner {
+      margin: 1.5rem 0;
+      padding: 0.9rem 1.2rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      display: none;
+      align-items: flex-start;
+      gap: 0.75rem;
+      line-height: 1.5;
     }
+
+    .zone-banner.visible { display: flex; }
+    .zone-banner .zone-icon { font-size: 1.3rem; flex-shrink: 0; }
+
+    .zone-banner.zone1 { background: #0f1a10; border: 1px solid #2a4a2e; color: #7dcf8a; }
+    .zone-banner.zone2 { background: #0d1a10; border: 1px solid #1e4a28; color: #5ddc96; }
+    .zone-banner.zone3 { background: #1a0e0e; border: 1px solid #4a1e1e; color: #c0504d; }
+
+    .zone-banner strong { display: block; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.2rem; opacity: 0.7; }
 
     /* ── Summary cards ── */
     .summary {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 1rem;
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
       opacity: 0;
       transform: translateY(8px);
       transition: opacity 0.3s, transform 0.3s;
     }
 
-    .summary.visible {
-      opacity: 1;
-      transform: none;
-    }
+    .summary.visible { opacity: 1; transform: none; }
 
     .card {
       background: var(--surface);
@@ -163,20 +194,16 @@
     }
 
     .card-label {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 0.35rem;
     }
 
-    .card-value {
-      font-size: 1.5rem;
-      font-weight: 500;
-      color: var(--gold);
-    }
-
+    .card-value { font-size: 1.4rem; font-weight: 500; color: var(--gold); }
     .card-value.green { color: var(--green); }
+    .card-value.blue  { color: var(--blue); }
 
     /* ── Table ── */
     .table-wrap {
@@ -186,25 +213,20 @@
       transition: opacity 0.3s 0.1s, transform 0.3s 0.1s;
     }
 
-    .table-wrap.visible {
-      opacity: 1;
-      transform: none;
-    }
+    .table-wrap.visible { opacity: 1; transform: none; }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
 
-    thead tr {
-      border-bottom: 1px solid var(--border);
-    }
+    thead tr { border-bottom: 1px solid var(--border); }
 
     th {
       text-align: right;
-      padding: 0.6rem 0.8rem;
-      font-size: 0.65rem;
+      padding: 0.6rem 0.7rem;
+      font-size: 0.62rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--muted);
@@ -216,58 +238,53 @@
 
     td {
       text-align: right;
-      padding: 0.55rem 0.8rem;
-      border-bottom: 1px solid #1c1c1e;
+      padding: 0.5rem 0.7rem;
+      border-bottom: 1px solid #242428;
       white-space: nowrap;
-      color: #c8c4bc;
+      color: #dedad0;
     }
 
     td:first-child { text-align: left; }
 
     tr.peak-row td {
       background: var(--peak-bg);
-      color: var(--peak-gold);
+      color: #ffe566;
       font-weight: 500;
-    }
-
-    tr.peak-row td:last-child {
-      color: var(--gold);
     }
 
     .badge {
       display: inline-block;
       background: var(--gold);
       color: #0e0e0f;
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       padding: 0.15rem 0.45rem;
       border-radius: 2px;
-      margin-left: 0.5rem;
+      margin-left: 0.4rem;
       font-weight: 500;
       vertical-align: middle;
     }
 
-    .pct-label {
-      color: var(--muted);
-      font-size: 0.75rem;
-    }
+    .pct-label { color: var(--muted); font-size: 0.72rem; }
 
     /* ── Formula ── */
     .formula {
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       padding: 1rem 1.2rem;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 6px;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: var(--muted);
+      line-height: 1.8;
       opacity: 0;
       transition: opacity 0.3s 0.2s;
     }
 
     .formula.visible { opacity: 1; }
     .formula span { color: var(--gold-dim); }
+    .formula .formula-row { display: block; }
 
     /* ── Empty state ── */
     .empty {
@@ -275,6 +292,7 @@
       padding: 4rem 2rem;
       color: var(--muted);
       font-size: 0.85rem;
+      line-height: 1.8;
     }
 
     .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 1rem; opacity: 0.3; }
@@ -287,33 +305,75 @@
   <header>
     <span class="ticket-icon">🎟</span>
     <h1>Raffle Optimiser</h1>
-    <p class="subtitle">Find the optimal number of tickets to maximise expected profit</p>
+    <p class="subtitle">Maximise expected profit across standard and instant win competitions</p>
   </header>
 
+  <!-- Ticket inputs -->
+  <div class="section-label">Ticket Details</div>
   <div class="inputs">
     <div class="field">
-      <label for="prize">Prize Value</label>
+      <label for="cost">Ticket Cost</label>
       <div class="input-wrap">
         <span class="prefix">£</span>
-        <input type="number" id="prize" min="1" step="any" placeholder="500">
+        <input type="number" id="cost" min="0.01" step="any" placeholder="1.00">
       </div>
     </div>
     <div class="field">
       <label for="sold">Tickets Already Sold</label>
       <div class="input-wrap">
         <span class="prefix">#</span>
-        <input type="number" id="sold" min="0" step="1" placeholder="99">
+        <input type="number" id="sold" min="0" step="1" placeholder="0">
       </div>
     </div>
     <div class="field">
-      <label for="cost">Your Ticket Cost</label>
+      <label for="total">Total Tickets</label>
       <div class="input-wrap">
-        <span class="prefix">£</span>
-        <input type="number" id="cost" min="0.01" step="any" placeholder="0.80">
+        <span class="prefix">#</span>
+        <input type="number" id="total" min="1" step="1" placeholder="100">
+      </div>
+    </div>
+    <div class="field">
+      <label for="maxbuy">Max Tickets Per User</label>
+      <div class="input-wrap">
+        <span class="prefix">#</span>
+        <input type="number" id="maxbuy" min="1" step="1" placeholder="10">
       </div>
     </div>
   </div>
 
+  <!-- Prize inputs -->
+  <div class="section-label">Prizes</div>
+  <div class="inputs">
+    <div class="field">
+      <label for="iwval">Total Instant Win Value</label>
+      <div class="input-wrap">
+        <span class="prefix">£</span>
+        <input type="number" id="iwval" min="0" step="any" placeholder="50">
+      </div>
+    </div>
+    <div class="field">
+      <label for="endprize">End Prize</label>
+      <div class="input-wrap">
+        <span class="prefix">£</span>
+        <input type="number" id="endprize" min="0" step="any" placeholder="25">
+      </div>
+    </div>
+    <div class="field">
+      <label for="salespct">Expected Sale %</label>
+      <div class="input-wrap">
+        <input type="number" id="salespct" min="1" max="100" step="1" placeholder="50" class="no-prefix has-suffix">
+        <span class="suffix">%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zone banner -->
+  <div class="zone-banner" id="zone-banner">
+    <span class="zone-icon" id="zone-icon"></span>
+    <div><strong id="zone-title"></strong><span id="zone-msg"></span></div>
+  </div>
+
+  <!-- Summary cards -->
   <div class="summary" id="summary">
     <div class="card">
       <div class="card-label">Optimal Tickets</div>
@@ -324,8 +384,12 @@
       <div class="card-value" id="s-cost">—</div>
     </div>
     <div class="card">
-      <div class="card-label">Win Probability</div>
+      <div class="card-label">End Prize Win Chance</div>
       <div class="card-value" id="s-prob">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Instant Win Return</div>
+      <div class="card-value blue" id="s-iw">—</div>
     </div>
     <div class="card">
       <div class="card-label">Expected Profit</div>
@@ -336,7 +400,7 @@
   <div class="table-wrap" id="table-wrap">
     <div class="empty">
       <span class="empty-icon">🎲</span>
-      Enter prize value, tickets sold, and ticket cost above to see results.
+      Enter competition details above to see results.
     </div>
   </div>
 
@@ -345,60 +409,114 @@
 
 <script>
   const $ = id => document.getElementById(id);
+  const ids = ['cost','sold','total','maxbuy','iwval','endprize','salespct'];
+  ids.forEach(id => $(id).addEventListener('input', calculate));
 
-  const inputs = ['prize','sold','cost'].map(id => $(id));
-  inputs.forEach(el => el.addEventListener('input', calculate));
-
-  function fmt(n, dp=2) {
-    return '£' + n.toFixed(dp);
-  }
+  const fmt  = (n, dp=2) => '£' + n.toFixed(dp);
+  const fmtp = (n, dp=2) => (n >= 0 ? '+' : '') + '£' + n.toFixed(dp);
 
   function calculate() {
-    const P = parseFloat($('prize').value);
-    const s = parseFloat($('sold').value);
-    const c = parseFloat($('cost').value);
+    const cost     = parseFloat($('cost').value);
+    const sold     = parseFloat($('sold').value);
+    const total    = parseFloat($('total').value);
+    const maxbuy   = parseFloat($('maxbuy').value);
+    const iwval    = parseFloat($('iwval').value)   || 0;
+    const endprize = parseFloat($('endprize').value) || 0;
+    const salespct = parseFloat($('salespct').value) || 100;
 
-    const summary = $('summary');
+    const summary   = $('summary');
     const tableWrap = $('table-wrap');
     const formulaEl = $('formula');
+    const banner    = $('zone-banner');
 
-    if (isNaN(P) || isNaN(s) || isNaN(c) || P <= 0 || s < 0 || c <= 0) {
+    const reset = (msg) => {
       summary.classList.remove('visible');
       tableWrap.classList.remove('visible');
       formulaEl.classList.remove('visible');
-      tableWrap.innerHTML = `<div class="empty"><span class="empty-icon">🎲</span>Enter prize value, tickets sold, and ticket cost above to see results.</div>`;
+      banner.className = 'zone-banner';
+      tableWrap.innerHTML = `<div class="empty"><span class="empty-icon">🎲</span>${msg}</div>`;
+    };
+
+    // Validate required fields
+    if (isNaN(cost) || isNaN(sold) || isNaN(total) || isNaN(maxbuy) ||
+        cost <= 0 || sold < 0 || total < 1 || maxbuy < 1 || sold >= total) {
+      reset('Enter competition details above to see results.');
       return;
     }
 
-    const rawN   = Math.sqrt((P * s) / c) - s;
-    const profit = n => (P * n / (s + n)) - (c * n);
-    const ev     = n => profit(n) / n;
-    const chance = n => n / (s + n);
+    // Core values
+    const remaining     = total - sold;               // tickets still available
+    const iwEvPerTicket = iwval / total;               // instant win EV per ticket (fixed across all tickets)
+    const cAdj          = cost - iwEvPerTicket;        // effective cost after instant win subsidy
+    // Tbase = total expected tickets sold including your own purchase.
+    // Win chance = n / Tbase, since your n tickets are already part of the expected sale %.
+    const Tbase         = total * (salespct / 100);
+    const Tothers       = n => Math.max(sold, Tbase - n); // other tickets sold, floored at already-sold
 
-    // If even 1 ticket has negative EV, this raffle isn't worth entering
-    if (rawN <= 0 || profit(1) <= 0) {
+    // Functions of n (tickets YOU buy)
+    const iwReturn      = n => iwEvPerTicket * n;
+    const endReturn     = n => endprize * n / (Tothers(n) + n);  // denom = Tbase
+    const totalReturn   = n => iwReturn(n) + endReturn(n);
+    const totalProfit   = n => totalReturn(n) - cost * n;
+    const evPerTicket   = n => totalProfit(n) / n;
+    const endChance     = n => n / (Tothers(n) + n);
+
+    // Determine zone and optimal n
+    let zone, optN, rawN;
+
+    if (cAdj <= 0) {
+      // Zone 1: instant wins alone cover ticket cost — buy as many as allowed
+      zone = 1;
+      optN = Math.min(maxbuy, remaining);
+    } else {
+      // Optimal n using adjusted cost against expected pool
+      rawN = Math.sqrt((endprize * Tbase) / cAdj) - Tbase;
+
+      if (rawN <= 0 || totalProfit(1) <= 0) {
+        // Zone 3: no positive EV
+        zone = 3;
+      } else {
+        zone = 2;
+        optN = Math.min(Math.round(rawN), maxbuy, remaining);
+      }
+    }
+
+    // Zone 3 — no entry
+    if (zone === 3) {
       summary.classList.remove('visible');
       formulaEl.classList.remove('visible');
-      tableWrap.innerHTML = `<div class="empty no-entry">
-        <span class="empty-icon">🚫</span>
-        There is no positive expected outcome for this raffle.<br>
-        The prize is too small relative to the ticket cost and competition — don't enter.
-      </div>`;
-      tableWrap.classList.add('visible');
+      banner.className = 'zone-banner zone3 visible';
+      $('zone-icon').textContent = '🚫';
+      $('zone-title').textContent = 'Do Not Enter';
+      $('zone-msg').textContent = 'There is no positive expected outcome for this competition. The prizes are too small relative to the ticket cost and competition size.';
+      tableWrap.innerHTML = '';
+      tableWrap.classList.remove('visible');
       return;
     }
 
-    const optN  = Math.round(rawN);
-    const peakP = profit(optN);
+    // Zone banner
+    if (zone === 1) {
+      banner.className = 'zone-banner zone1 visible';
+      $('zone-icon').textContent = '✅';
+      $('zone-title').textContent = 'Zone 1 — Instant Wins Cover Ticket Cost';
+      $('zone-msg').textContent = `Instant win EV: ${(iwval / (total * cost)).toFixed(4)}x your money (${fmt(iwval)} prizes across ${total} × ${fmt(cost)} tickets). Entry is profitable on instant wins alone — end prize is bonus upside. Buying maximum allowed tickets.`;
+    } else {
+      banner.className = 'zone-banner zone2 visible';
+      $('zone-icon').textContent = '📊';
+      $('zone-title').textContent = iwval > 0 ? 'Zone 2 — Combined EV is Positive' : 'Zone 2 — End Prize Only';
+      $('zone-msg').textContent = iwval > 0 ? `Instant wins partially offset ticket cost (effective cost: ${fmt(cAdj)}/ticket). Combined with the end prize, there is a profitable optimal entry point.` : `No instant wins — end prize only. Optimal entry based purely on end prize EV.`;
+    }
 
     // Summary cards
+    const peakProfit = totalProfit(optN);
     $('s-optimal').textContent = optN;
-    $('s-cost').textContent    = fmt(c * optN);
-    $('s-prob').textContent    = (chance(optN) * 100).toFixed(2) + '%';
-    $('s-profit').textContent  = fmt(peakP);
+    $('s-cost').textContent    = fmt(cost * optN);
+    $('s-prob').textContent    = (endChance(optN) * 100).toFixed(2) + '%';
+    $('s-iw').textContent      = fmt(iwReturn(optN));
+    $('s-profit').textContent  = fmt(peakProfit);
     summary.classList.add('visible');
 
-    // Build row set: optimal + 5% decrements
+    // Build table rows: optimal + 5% profit decrements down to 0
     const seen = new Set();
     const rows = [];
 
@@ -411,26 +529,28 @@
     addRow(optN, 'optimal', 100);
 
     for (let pct = 95; pct >= 0; pct -= 5) {
-      const target = peakP * (pct / 100);
+      const target = peakProfit * (pct / 100);
       let bestN = 1, bestDiff = Infinity;
       for (let n = optN - 1; n >= 1; n--) {
-        const diff = Math.abs(profit(n) - target);
+        const diff = Math.abs(totalProfit(n) - target);
         if (diff < bestDiff) { bestDiff = diff; bestN = n; }
-        if (profit(n) < target - 1) break;
+        if (totalProfit(n) < target - 1) break;
       }
       addRow(bestN, pct + '% of peak', pct);
     }
 
     rows.sort((a, b) => b.n - a.n);
 
-    // Render table
+    // Render
     let html = `<table>
       <thead><tr>
         <th>Tickets</th>
         <th>Cost</th>
-        <th>Win Chance</th>
-        <th>Exp. Return</th>
-        <th>Exp. Profit</th>
+        <th>End Prize Chance</th>
+        <th>Instant Win Return</th>
+        <th>End Prize Return</th>
+        <th>Total Return</th>
+        <th>Total Profit</th>
         <th>EV / Ticket</th>
         <th></th>
       </tr></thead><tbody>`;
@@ -439,11 +559,13 @@
       const isPeak = pct === 100;
       html += `<tr class="${isPeak ? 'peak-row' : ''}">
         <td>${n}</td>
-        <td>${fmt(c * n)}</td>
-        <td>${(chance(n) * 100).toFixed(2)}%</td>
-        <td>${fmt(P * chance(n))}</td>
-        <td>${fmt(profit(n))}</td>
-        <td>${fmt(ev(n), 4)}</td>
+        <td>${fmt(cost * n)}</td>
+        <td>${(endChance(n) * 100).toFixed(2)}%</td>
+        <td>${fmt(iwReturn(n))}</td>
+        <td>${fmt(endReturn(n))}</td>
+        <td>${fmt(totalReturn(n))}</td>
+        <td>${fmt(totalProfit(n))}</td>
+        <td>${fmt(evPerTicket(n), 4)}</td>
         <td>${isPeak
           ? '<span class="badge">optimal</span>'
           : `<span class="pct-label">${label}</span>`
@@ -455,8 +577,18 @@
     tableWrap.innerHTML = html;
     tableWrap.classList.add('visible');
 
-    // Formula
-    formulaEl.innerHTML = `n = √(P × s / c) − s &nbsp;=&nbsp; √(<span>${P} × ${s} / ${c}</span>) − ${s} &nbsp;=&nbsp; <span>${rawN.toFixed(4)}</span> &nbsp;≈&nbsp; <span>${optN}</span>`;
+    // Formula breakdown
+    const formulaLines = zone === 1
+      ? `<span class="formula-row">Instant win EV/ticket = total_iw_value / total_tickets = ${fmt(iwval)} / ${total} = <span>${fmt(iwEvPerTicket)}</span></span>
+         <span class="formula-row">Effective cost = ticket cost − instant win EV = ${fmt(cost)} − ${fmt(iwEvPerTicket)} = <span>${fmt(cAdj)}</span> (≤ 0, so Zone 1)</span>
+         <span class="formula-row">Total profit (${optN} tickets) = ${fmt(iwReturn(optN))} iw + ${fmt(endReturn(optN))} end prize − ${fmt(cost * optN)} cost = <span>${fmt(peakProfit)}</span></span>`
+      : `<span class="formula-row">Instant win EV/ticket = ${fmt(iwval)} / ${total} = <span>${fmt(iwEvPerTicket)}</span></span>
+         <span class="formula-row">Effective cost (c_adj) = ${fmt(cost)} − ${fmt(iwEvPerTicket)} = <span>${fmt(cAdj)}</span></span>
+         <span class="formula-row">Expected final pool incl. your tickets (Tbase) = ${total} × ${salespct}% = <span>${Tbase}</span></span>
+         <span class="formula-row">Win chance = n / Tbase (your tickets already included in expected sale %)</span>
+         <span class="formula-row">Optimal n = √(end_prize × Tbase / c_adj) − Tbase = √(${endprize} × ${Tbase} / ${cAdj.toFixed(4)}) − ${Tbase} = <span>${rawN ? rawN.toFixed(4) : '—'}</span> ≈ <span>${optN}</span> (capped at max ${maxbuy})</span>`;
+
+    formulaEl.innerHTML = formulaLines;
     formulaEl.classList.add('visible');
   }
 </script>
