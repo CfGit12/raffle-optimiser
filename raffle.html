@@ -251,6 +251,10 @@
       color: #ffe566;
       font-weight: 500;
     }
+    tr.peak-row td:first-child {
+      border-left: 3px solid var(--gold);
+      padding-left: calc(0.7rem - 3px);
+    }
 
     .badge {
       display: inline-block;
@@ -333,10 +337,10 @@
       </div>
     </div>
     <div class="field">
-      <label for="maxbuy">Max Tickets Per User</label>
+      <label for="salespct">Expected Sale %</label>
       <div class="input-wrap">
-        <span class="prefix">#</span>
-        <input type="number" id="maxbuy" min="1" step="1" placeholder="10">
+        <input type="number" id="salespct" min="1" max="100" step="1" placeholder="50" class="no-prefix has-suffix">
+        <span class="suffix">%</span>
       </div>
     </div>
   </div>
@@ -345,7 +349,7 @@
   <div class="section-label">Prizes</div>
   <div class="inputs">
     <div class="field">
-      <label for="iwval">Total Instant Win Value</label>
+      <label for="iwval">Remaining Instant Win Value</label>
       <div class="input-wrap">
         <span class="prefix">£</span>
         <input type="number" id="iwval" min="0" step="any" placeholder="50">
@@ -356,13 +360,6 @@
       <div class="input-wrap">
         <span class="prefix">£</span>
         <input type="number" id="endprize" min="0" step="any" placeholder="25">
-      </div>
-    </div>
-    <div class="field">
-      <label for="salespct">Expected Sale %</label>
-      <div class="input-wrap">
-        <input type="number" id="salespct" min="1" max="100" step="1" placeholder="50" class="no-prefix has-suffix">
-        <span class="suffix">%</span>
       </div>
     </div>
   </div>
@@ -376,6 +373,14 @@
   <!-- Summary cards -->
   <div class="summary" id="summary">
     <div class="card">
+      <div class="card-label">Overall EV</div>
+      <div class="card-value green" id="s-ev">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Expected Profit</div>
+      <div class="card-value green" id="s-profit">—</div>
+    </div>
+    <div class="card">
       <div class="card-label">Optimal Tickets</div>
       <div class="card-value" id="s-optimal">—</div>
     </div>
@@ -388,12 +393,12 @@
       <div class="card-value" id="s-prob">—</div>
     </div>
     <div class="card">
-      <div class="card-label">Instant Win Return</div>
-      <div class="card-value blue" id="s-iw">—</div>
+      <div class="card-label">Instant Win EV</div>
+      <div class="card-value blue" id="s-iwev">—</div>
     </div>
     <div class="card">
-      <div class="card-label">Expected Profit</div>
-      <div class="card-value green" id="s-profit">—</div>
+      <div class="card-label">Instant Win Return</div>
+      <div class="card-value blue" id="s-iw">—</div>
     </div>
   </div>
 
@@ -409,7 +414,7 @@
 
 <script>
   const $ = id => document.getElementById(id);
-  const ids = ['cost','sold','total','maxbuy','iwval','endprize','salespct'];
+  const ids = ['cost','sold','total','iwval','endprize','salespct'];
   ids.forEach(id => $(id).addEventListener('input', calculate));
 
   const fmt  = (n, dp=2) => '£' + n.toFixed(dp);
@@ -419,7 +424,6 @@
     const cost     = parseFloat($('cost').value);
     const sold     = parseFloat($('sold').value);
     const total    = parseFloat($('total').value);
-    const maxbuy   = parseFloat($('maxbuy').value);
     const iwval    = parseFloat($('iwval').value)   || 0;
     const endprize = parseFloat($('endprize').value) || 0;
     const salespct = parseFloat($('salespct').value) || 100;
@@ -438,38 +442,67 @@
     };
 
     // Validate required fields
-    if (isNaN(cost) || isNaN(sold) || isNaN(total) || isNaN(maxbuy) ||
-        cost <= 0 || sold < 0 || total < 1 || maxbuy < 1 || sold >= total) {
+    if (isNaN(cost) || isNaN(sold) || isNaN(total) || cost <= 0 || sold < 0 || total < 1 || sold >= total) {
       reset('Enter competition details above to see results.');
+      return;
+    }
+
+    // Validate expected sale % implies at least as many tickets as already sold
+    const expectedSold = total * (salespct / 100);
+    if (expectedSold < sold) {
+      summary.classList.remove('visible');
+      formulaEl.classList.remove('visible');
+      banner.className = 'zone-banner zone3 visible';
+      $('zone-icon').textContent = '⚠️';
+      $('zone-title').textContent = 'Invalid Configuration';
+      $('zone-msg').textContent = `Expected sale % implies ${Math.round(expectedSold).toLocaleString()} tickets sold, but ${sold.toLocaleString()} have already been sold. Increase expected sale % to at least ${Math.ceil(sold / total * 100)}%.`;
+      tableWrap.innerHTML = '';
+      tableWrap.classList.remove('visible');
       return;
     }
 
     // Core values
     const remaining     = total - sold;               // tickets still available
-    const iwEvPerTicket = iwval / total;               // instant win EV per ticket (fixed across all tickets)
+    const iwEvPerTicket = remaining > 0 ? iwval / remaining : 0; // instant win EV per remaining ticket
     const cAdj          = cost - iwEvPerTicket;        // effective cost after instant win subsidy
-    // Tbase = total expected tickets sold including your own purchase.
-    // Win chance = n / Tbase, since your n tickets are already part of the expected sale %.
-    const Tbase         = total * (salespct / 100);
-    const Tothers       = n => Math.max(sold, Tbase - n); // other tickets sold, floored at already-sold
+    // Tbase = expected total tickets sold by others (already sold + future sales),
+    // NOT including your own purchase. Your n tickets are added on top.
+    // Win chance = n / (Tbase + n), giving proper diminishing returns as n grows.
+    const Tbase         = Math.max(sold, total * (salespct / 100));
 
     // Functions of n (tickets YOU buy)
     const iwReturn      = n => iwEvPerTicket * n;
-    const endReturn     = n => endprize * n / (Tothers(n) + n);  // denom = Tbase
+    const endReturn     = n => endprize * n / (Tbase + n);
     const totalReturn   = n => iwReturn(n) + endReturn(n);
     const totalProfit   = n => totalReturn(n) - cost * n;
-    const evPerTicket   = n => totalProfit(n) / n;
-    const endChance     = n => n / (Tothers(n) + n);
+    const evMultiplier  = n => totalReturn(n) / (cost * n);
+    const endChance     = n => n / (Tbase + n);
 
     // Determine zone and optimal n
     let zone, optN, rawN;
 
+    // Helper: find the true profit-maximising n by brute-force scan up to a cap.
+    // Needed because Tothers() has a floor at `sold` which makes the closed-form
+    // formula unreliable when Tbase < sold or when a cap truncates past the peak.
+    const findPeakN = (cap) => {
+      let bestProfit = -Infinity, bestN = 0;
+      for (let n = 1; n <= cap; n++) {
+        const p = totalProfit(n);
+        if (p > bestProfit) { bestProfit = p; bestN = n; }
+        // Once profit has turned and is clearly falling, we can stop early
+        if (p < bestProfit - 1 && n > 10) break;
+      }
+      return { n: bestN, profit: bestProfit };
+    };
+
+    const cap = remaining;
+
     if (cAdj <= 0) {
       // Zone 1: instant wins alone cover ticket cost — buy as many as allowed
       zone = 1;
-      optN = Math.min(maxbuy, remaining);
+      optN = cap;
     } else {
-      // Optimal n using adjusted cost against expected pool
+      // Optimal n using adjusted cost against expected pool (closed-form starting point)
       rawN = Math.sqrt((endprize * Tbase) / cAdj) - Tbase;
 
       if (rawN <= 0 || totalProfit(1) <= 0) {
@@ -477,20 +510,63 @@
         zone = 3;
       } else {
         zone = 2;
-        optN = Math.min(Math.round(rawN), maxbuy, remaining);
+        // Use closed-form as a guide but verify with a scan — the Tothers floor
+        // or the cap can push optN into negative territory
+        const formulaN = Math.min(Math.round(rawN), cap);
+        const { n: peakN, profit: peakProfit } = findPeakN(cap);
+        if (peakProfit <= 0) {
+          zone = 3;
+        } else {
+          optN = peakN;
+        }
       }
     }
 
     // Zone 3 — no entry
     if (zone === 3) {
-      summary.classList.remove('visible');
-      formulaEl.classList.remove('visible');
       banner.className = 'zone-banner zone3 visible';
       $('zone-icon').textContent = '🚫';
       $('zone-title').textContent = 'Do Not Enter';
-      $('zone-msg').textContent = 'There is no positive expected outcome for this competition. The prizes are too small relative to the ticket cost and competition size.';
-      tableWrap.innerHTML = '';
-      tableWrap.classList.remove('visible');
+      $('zone-msg').textContent = 'There is no positive expected outcome for this competition. The prizes are too small relative to the ticket cost and competition size. Showing single ticket EV for reference.';
+
+      // Show summary at n=1 for reference
+      $('s-optimal').textContent = '—';
+      $('s-cost').textContent    = fmt(cost);
+      $('s-prob').textContent    = (endChance(1) * 100).toFixed(2) + '%';
+      $('s-iwev').textContent    = iwval > 0 ? (iwEvPerTicket / cost).toFixed(4) + 'x' : 'N/A';
+      $('s-iw').textContent      = fmt(iwReturn(1));
+      $('s-profit').textContent  = fmt(totalProfit(1));
+      $('s-ev').textContent      = evMultiplier(1).toFixed(2) + 'x';
+      summary.classList.add('visible');
+
+      // Show table at n=1 only
+      const p1 = totalProfit(1);
+      let html = `<table>
+        <thead><tr>
+          <th style="text-align:left">Tickets</th>
+          <th>Cost</th>
+          <th>End Prize Chance</th>
+          <th>Instant Win Return</th>
+          <th>End Prize Return</th>
+          <th>Total Return</th>
+          <th>Total Profit</th>
+          <th>Overall EV</th>
+          <th></th>
+        </tr></thead><tbody>
+        <tr>
+          <td>1</td>
+          <td>${fmt(cost)}</td>
+          <td>${(endChance(1) * 100).toFixed(2)}%</td>
+          <td>${fmt(iwReturn(1))}</td>
+          <td>${fmt(endReturn(1))}</td>
+          <td>${fmt(totalReturn(1))}</td>
+          <td>${fmt(p1)}</td>
+          <td>${evMultiplier(1).toFixed(2)}x</td>
+          <td><span class="pct-label">reference</span></td>
+        </tr></tbody></table>`;
+      tableWrap.innerHTML = html;
+      tableWrap.classList.add('visible');
+      formulaEl.classList.remove('visible');
       return;
     }
 
@@ -499,7 +575,7 @@
       banner.className = 'zone-banner zone1 visible';
       $('zone-icon').textContent = '✅';
       $('zone-title').textContent = 'Zone 1 — Instant Wins Cover Ticket Cost';
-      $('zone-msg').textContent = `Instant win EV: ${(iwval / (total * cost)).toFixed(4)}x your money (${fmt(iwval)} prizes across ${total} × ${fmt(cost)} tickets). Entry is profitable on instant wins alone — end prize is bonus upside. Buying maximum allowed tickets.`;
+      $('zone-msg').textContent = `Instant win EV: ${(iwEvPerTicket / cost).toFixed(4)}x your money (${fmt(iwval)} prizes across ${remaining} remaining × ${fmt(cost)} tickets). Entry is profitable on instant wins alone — end prize is bonus upside. Buying maximum allowed tickets.`;
     } else {
       banner.className = 'zone-banner zone2 visible';
       $('zone-icon').textContent = '📊';
@@ -512,22 +588,27 @@
     $('s-optimal').textContent = optN;
     $('s-cost').textContent    = fmt(cost * optN);
     $('s-prob').textContent    = (endChance(optN) * 100).toFixed(2) + '%';
+    $('s-iwev').textContent    = iwval > 0 ? (iwEvPerTicket / cost).toFixed(4) + 'x' : 'N/A';
     $('s-iw').textContent      = fmt(iwReturn(optN));
     $('s-profit').textContent  = fmt(peakProfit);
+    $('s-ev').textContent      = evMultiplier(optN).toFixed(2) + 'x';
     summary.classList.add('visible');
 
-    // Build table rows: optimal + 5% profit decrements down to 0
+    // Build table rows: symmetric around peak
+    // Below peak: 5% decrements down to 0 (left side of curve, lower n)
+    // Above peak: same % decrements on the right side of curve (higher n)
     const seen = new Set();
     const rows = [];
 
-    const addRow = (n, label, pct) => {
+    const addRow = (n, label, pct, side) => {
       if (n < 1 || seen.has(n)) return;
       seen.add(n);
-      rows.push({ n, label, pct });
+      rows.push({ n, label, pct, side });
     };
 
-    addRow(optN, 'optimal', 100);
+    addRow(optN, 'optimal', 100, 'peak');
 
+    // Below-peak rows: search downward from optN
     for (let pct = 95; pct >= 0; pct -= 5) {
       const target = peakProfit * (pct / 100);
       let bestN = 1, bestDiff = Infinity;
@@ -536,7 +617,21 @@
         if (diff < bestDiff) { bestDiff = diff; bestN = n; }
         if (totalProfit(n) < target - 1) break;
       }
-      addRow(bestN, pct + '% of peak', pct);
+      addRow(bestN, pct + '% of peak', pct, 'below');
+    }
+
+    // Above-peak rows: search upward from optN for where profit drops to same % thresholds
+    for (let pct = 95; pct >= 90; pct -= 5) {
+      const target = peakProfit * (pct / 100);
+      let bestN = null, bestDiff = Infinity;
+      for (let n = optN + 1; n <= remaining; n++) {
+        const p = totalProfit(n);
+        const diff = Math.abs(p - target);
+        if (diff < bestDiff) { bestDiff = diff; bestN = n; }
+        // Stop once profit has dropped well below target
+        if (p < target - 1) break;
+      }
+      if (bestN) addRow(bestN, pct + '% of peak', pct + 1000, 'above'); // pct+1000 to distinguish from below
     }
 
     rows.sort((a, b) => b.n - a.n);
@@ -551,12 +646,15 @@
         <th>End Prize Return</th>
         <th>Total Return</th>
         <th>Total Profit</th>
-        <th>EV / Ticket</th>
+        <th>Overall EV</th>
         <th></th>
       </tr></thead><tbody>`;
 
-    for (const { n, label, pct } of rows) {
-      const isPeak = pct === 100;
+    for (const { n, label, pct, side } of rows) {
+      const isPeak = side === 'peak';
+      const isAbove = side === 'above';
+      // Derive display label for above-peak rows
+      const displayLabel = isAbove ? label.replace(/^(\d+)% of peak/, '$1% of peak') : label;
       html += `<tr class="${isPeak ? 'peak-row' : ''}">
         <td>${n}</td>
         <td>${fmt(cost * n)}</td>
@@ -565,10 +663,10 @@
         <td>${fmt(endReturn(n))}</td>
         <td>${fmt(totalReturn(n))}</td>
         <td>${fmt(totalProfit(n))}</td>
-        <td>${fmt(evPerTicket(n), 4)}</td>
+        <td>${evMultiplier(n).toFixed(2)}x</td>
         <td>${isPeak
           ? '<span class="badge">optimal</span>'
-          : `<span class="pct-label">${label}</span>`
+          : `<span class="pct-label">${displayLabel}</span>`
         }</td>
       </tr>`;
     }
@@ -579,14 +677,14 @@
 
     // Formula breakdown
     const formulaLines = zone === 1
-      ? `<span class="formula-row">Instant win EV/ticket = total_iw_value / total_tickets = ${fmt(iwval)} / ${total} = <span>${fmt(iwEvPerTicket)}</span></span>
+      ? `<span class="formula-row">Instant win EV/ticket = remaining_iw_value / remaining_tickets = ${fmt(iwval)} / ${remaining} = <span>${fmt(iwEvPerTicket)}</span></span>
          <span class="formula-row">Effective cost = ticket cost − instant win EV = ${fmt(cost)} − ${fmt(iwEvPerTicket)} = <span>${fmt(cAdj)}</span> (≤ 0, so Zone 1)</span>
          <span class="formula-row">Total profit (${optN} tickets) = ${fmt(iwReturn(optN))} iw + ${fmt(endReturn(optN))} end prize − ${fmt(cost * optN)} cost = <span>${fmt(peakProfit)}</span></span>`
-      : `<span class="formula-row">Instant win EV/ticket = ${fmt(iwval)} / ${total} = <span>${fmt(iwEvPerTicket)}</span></span>
+      : `<span class="formula-row">Instant win EV/ticket = ${fmt(iwval)} / ${remaining} = <span>${fmt(iwEvPerTicket)}</span></span>
          <span class="formula-row">Effective cost (c_adj) = ${fmt(cost)} − ${fmt(iwEvPerTicket)} = <span>${fmt(cAdj)}</span></span>
-         <span class="formula-row">Expected final pool incl. your tickets (Tbase) = ${total} × ${salespct}% = <span>${Tbase}</span></span>
-         <span class="formula-row">Win chance = n / Tbase (your tickets already included in expected sale %)</span>
-         <span class="formula-row">Optimal n = √(end_prize × Tbase / c_adj) − Tbase = √(${endprize} × ${Tbase} / ${cAdj.toFixed(4)}) − ${Tbase} = <span>${rawN ? rawN.toFixed(4) : '—'}</span> ≈ <span>${optN}</span> (capped at max ${maxbuy})</span>`;
+         <span class="formula-row">Expected pool excl. your tickets (Tbase) = max(sold, ${total} × ${salespct}%) = <span>${Tbase}</span></span>
+         <span class="formula-row">Win chance = n / (Tbase + n) — your tickets added on top of expected pool</span>
+         <span class="formula-row">Optimal n = √(end_prize × Tbase / c_adj) − Tbase = √(${endprize} × ${Tbase} / ${cAdj.toFixed(4)}) − ${Tbase} = <span>${rawN ? rawN.toFixed(4) : '—'}</span> ≈ <span>${optN}</span> </span>`;
 
     formulaEl.innerHTML = formulaLines;
     formulaEl.classList.add('visible');
