@@ -300,6 +300,46 @@
     }
 
     .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 1rem; opacity: 0.3; }
+
+    /* ── Discount dropdown ── */
+    .discount-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    select#discount {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 1rem;
+      padding: 0.7rem 0.9rem;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237a6330' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.9rem center;
+      padding-right: 2.2rem;
+    }
+
+    select#discount:focus {
+      outline: none;
+      border-color: var(--gold-dim);
+    }
+
+    .effective-cost {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+      min-height: 1em;
+    }
+
+    .effective-cost span { color: var(--gold); }
+
     /* ── URL Import ── */
     .url-section {
       margin-bottom: 2rem;
@@ -498,6 +538,22 @@
         <input type="number" id="cost" min="0.01" step="any" placeholder="1.00">
       </div>
     </div>
+    <div class="discount-wrap field">
+      <label for="discount">Discount</label>
+      <select id="discount">
+        <option value="0">0% — No discount</option>
+        <option value="5">5%</option>
+        <option value="10">10%</option>
+        <option value="15">15%</option>
+        <option value="20">20%</option>
+        <option value="22.5">22.5%</option>
+        <option value="25">25%</option>
+        <option value="30">30%</option>
+        <option value="40">40%</option>
+        <option value="50">50%</option>
+      </select>
+      <div class="effective-cost" id="effective-cost"></div>
+    </div>
     <div class="field">
       <label for="sold">Tickets Already Sold</label>
       <div class="input-wrap">
@@ -591,13 +647,24 @@
 <script>
   const $ = id => document.getElementById(id);
   const ids = ['cost','sold','total','iwval','endprize','salespct'];
+  $('discount').addEventListener('change', calculate);
   ids.forEach(id => $(id).addEventListener('input', calculate));
 
   const fmt  = (n, dp=2) => '£' + n.toFixed(dp);
   const fmtp = (n, dp=2) => (n >= 0 ? '+' : '') + '£' + n.toFixed(dp);
 
   function calculate() {
-    const cost     = parseFloat($('cost').value);
+    const baseCost   = parseFloat($('cost').value);
+    const discountPct = parseFloat($('discount').value) || 0;
+    const cost        = baseCost * (1 - discountPct / 100);
+
+    // Update effective cost display
+    const ecEl = $('effective-cost');
+    if (!isNaN(baseCost) && discountPct > 0) {
+      ecEl.innerHTML = `Effective price: <span>£${cost.toFixed(4)}</span>`;
+    } else {
+      ecEl.textContent = '';
+    }
     const sold     = parseFloat($('sold').value);
     const total    = parseFloat($('total').value);
     const iwval    = parseFloat($('iwval').value)   || 0;
@@ -867,6 +934,22 @@
   }
   const WORKER_URL = 'https://raffle-parser.charles-flynn.workers.dev';
 
+  const SITE_DISCOUNTS = {
+    'stealthcompetitions.co.uk': '22.5',
+    'lincolnshire-competitions.co.uk': '10',
+    'speedcompetitions.co.uk': '10',
+  };
+
+  function discountForUrl(url) {
+    try {
+      const host = new URL(url).hostname.replace('www.', '');
+      return SITE_DISCOUNTS[host] ?? '0';
+    } catch {
+      return '0';
+    }
+  }
+
+
   async function parseUrl() {
     const url = $('comp-url').value.trim();
     if (!url) return;
@@ -891,6 +974,9 @@
       if (!res.ok || !data.ok) {
         throw new Error(data.error || 'Unknown error from parser');
       }
+
+      // Auto-select discount for known sites
+      $('discount').value = discountForUrl(url);
 
       // Populate input fields
       const f = data.fields;
