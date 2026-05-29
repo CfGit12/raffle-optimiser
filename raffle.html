@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --bg:        #0c0c0d;
       --surface:   #18181b;
@@ -21,488 +20,154 @@
       --peak-bg:   #1e1c08;
       --peak-gold: #ffe566;
     }
-
-    html, body {
-      min-height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-    }
-
+    html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; }
     body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
     }
-
-    .wrap {
-      position: relative;
-      z-index: 1;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 3rem 1.5rem 5rem;
-    }
-
-    header {
-      margin-bottom: 2.5rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 2rem;
-    }
-
+    .wrap { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+    header { margin-bottom: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 2rem; }
     .ticket-icon { font-size: 2rem; display: block; margin-bottom: 0.75rem; opacity: 0.8; }
+    h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem,6vw,3.5rem); font-weight: 900; line-height: 1; color: var(--gold); letter-spacing: -1px; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--muted); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; }
 
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2rem, 6vw, 3.5rem);
-      font-weight: 900;
-      line-height: 1;
-      color: var(--gold);
-      letter-spacing: -1px;
-      margin-bottom: 0.5rem;
-    }
+    .section-label { font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; margin-top: 1.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--gold-dim); opacity: 0.85; }
 
-    .subtitle {
-      color: var(--muted);
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    /* ── Section labels ── */
-    .section-label {
-      font-size: 0.72rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 0.75rem;
-      margin-top: 1.75rem;
-      padding-bottom: 0.4rem;
-      border-bottom: 1px solid var(--gold-dim);
-      opacity: 0.85;
-    }
-
-    /* ── Inputs ── */
-    .inputs {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    label {
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #c8b878;
-    }
-
-    .input-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .prefix {
-      position: absolute;
-      left: 0.9rem;
-      color: var(--gold-dim);
-      font-size: 0.9rem;
-      pointer-events: none;
-    }
-
-    .suffix {
-      position: absolute;
-      right: 0.9rem;
-      color: var(--gold-dim);
-      font-size: 0.9rem;
-      pointer-events: none;
-    }
-
-    input[type=number] {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      font-size: 1rem;
-      padding: 0.7rem 0.9rem 0.7rem 1.8rem;
-      transition: border-color 0.15s;
-      -moz-appearance: textfield;
-      appearance: textfield;
-    }
-
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-    input[type=number]:focus {
-      outline: none;
-      border-color: var(--gold-dim);
-    }
-
+    .inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 0.5rem; }
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+    label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c8b878; }
+    .input-wrap { position: relative; display: flex; align-items: center; }
+    .prefix { position: absolute; left: 0.9rem; color: var(--gold-dim); font-size: 0.9rem; pointer-events: none; }
+    .suffix { position: absolute; right: 0.9rem; color: var(--gold-dim); font-size: 0.9rem; pointer-events: none; }
+    input[type=number] { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 1rem; padding: 0.7rem 0.9rem 0.7rem 1.8rem; transition: border-color 0.15s; -moz-appearance: textfield; appearance: textfield; }
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number]:focus { outline: none; border-color: var(--gold-dim); }
     input.has-suffix { padding-right: 2rem; }
-    input.no-prefix  { padding-left: 0.9rem; }
+    input.no-prefix { padding-left: 0.9rem; }
 
-    /* ── Zone banner ── */
-    .zone-banner {
-      margin: 1.5rem 0;
-      padding: 0.9rem 1.2rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      display: none;
-      align-items: flex-start;
-      gap: 0.75rem;
-      line-height: 1.5;
-    }
-
-    .zone-banner.visible { display: flex; }
-    .zone-banner .zone-icon { font-size: 1.3rem; flex-shrink: 0; }
-
-    .zone-banner.zone1 { background: #0f1a10; border: 1px solid #2a4a2e; color: #7dcf8a; }
-    .zone-banner.zone2 { background: #0d1a10; border: 1px solid #1e4a28; color: #5ddc96; }
-    .zone-banner.zone3 { background: #1a0e0e; border: 1px solid #4a1e1e; color: #c0504d; }
-
-    .zone-banner strong { display: block; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.2rem; opacity: 0.7; }
-
-    /* ── Summary cards ── */
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 0.3s, transform 0.3s;
-    }
-
-    .summary.visible { opacity: 1; transform: none; }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 1rem 1.2rem;
-    }
-
-    .card-label {
-      font-size: 0.62rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.35rem;
-    }
-
-    .card-value { font-size: 1.4rem; font-weight: 500; color: var(--gold); }
-    .card-value.green { color: var(--green); }
-    .card-value.blue  { color: var(--blue); }
-
-    /* ── Table ── */
-    .table-wrap {
-      overflow-x: auto;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 0.3s 0.1s, transform 0.3s 0.1s;
-    }
-
-    .table-wrap.visible { opacity: 1; transform: none; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
-
-    thead tr { border-bottom: 1px solid var(--border); }
-
-    th {
-      text-align: right;
-      padding: 0.6rem 0.7rem;
-      font-size: 0.62rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 400;
-      white-space: nowrap;
-    }
-
-    th:first-child { text-align: left; }
-
-    td {
-      text-align: right;
-      padding: 0.5rem 0.7rem;
-      border-bottom: 1px solid #242428;
-      white-space: nowrap;
-      color: #dedad0;
-    }
-
-    td:first-child { text-align: left; }
-
-    tr.peak-row td {
-      background: var(--peak-bg);
-      color: #ffe566;
-      font-weight: 500;
-    }
-    tr.peak-row td:first-child {
-      border-left: 3px solid var(--gold);
-      padding-left: calc(0.7rem - 3px);
-    }
-
-    .badge {
-      display: inline-block;
-      background: var(--gold);
-      color: #0e0e0f;
-      font-size: 0.58rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 0.15rem 0.45rem;
-      border-radius: 2px;
-      margin-left: 0.4rem;
-      font-weight: 500;
-      vertical-align: middle;
-    }
-
-    .pct-label { color: var(--muted); font-size: 0.72rem; }
-
-    /* ── Formula ── */
-    .formula {
-      margin-top: 1.5rem;
-      padding: 1rem 1.2rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.76rem;
-      color: var(--muted);
-      line-height: 1.8;
-      opacity: 0;
-      transition: opacity 0.3s 0.2s;
-    }
-
-    .formula.visible { opacity: 1; }
-    .formula span { color: var(--gold-dim); }
-    .formula .formula-row { display: block; }
-
-    /* ── Empty state ── */
-    .empty {
-      text-align: center;
-      padding: 4rem 2rem;
-      color: var(--muted);
-      font-size: 0.85rem;
-      line-height: 1.8;
-    }
-
-    .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 1rem; opacity: 0.3; }
-
-    /* ── Discount dropdown ── */
-    .discount-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    select#discount {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      font-size: 1rem;
-      padding: 0.7rem 0.9rem;
-      cursor: pointer;
-      transition: border-color 0.15s;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237a6330' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.9rem center;
-      padding-right: 2.2rem;
-    }
-
-    select#discount:focus {
-      outline: none;
-      border-color: var(--gold-dim);
-    }
-
-    .effective-cost {
-      font-size: 0.7rem;
-      color: var(--muted);
-      margin-top: 0.2rem;
-      min-height: 1em;
-    }
-
+    /* Discount */
+    .discount-wrap { display: flex; flex-direction: column; gap: 0.4rem; }
+    select#discount { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 1rem; padding: 0.7rem 0.9rem; cursor: pointer; transition: border-color 0.15s; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23a07820' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+    select#discount:focus { outline: none; border-color: var(--gold-dim); }
+    .effective-cost { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; min-height: 1em; }
     .effective-cost span { color: var(--gold); }
 
-    /* ── URL Import ── */
-    .url-section {
-      margin-bottom: 2rem;
-      padding: 1.2rem 1.4rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-    }
-
-    .url-row {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-    }
-
-    .url-input-wrap {
-      flex: 1;
-      position: relative;
-    }
-
-    .url-input-wrap input[type=text] {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.85rem;
-      padding: 0.7rem 0.9rem;
-      transition: border-color 0.15s;
-    }
-
-    .url-input-wrap input[type=text]:focus {
-      outline: none;
-      border-color: var(--gold-dim);
-    }
-
-    .url-input-wrap input[type=text]::placeholder {
-      color: var(--muted);
-    }
-
-    .btn-parse {
-      background: var(--gold);
-      color: #0c0c0d;
-      border: none;
-      border-radius: 4px;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.78rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 0.7rem 1.2rem;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: opacity 0.15s;
-      flex-shrink: 0;
-    }
-
+    /* URL Import */
+    .url-section { margin-bottom: 2rem; padding: 1.2rem 1.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+    .url-row { display: flex; gap: 0.75rem; align-items: center; }
+    .url-input-wrap { flex: 1; }
+    .url-input-wrap input[type=text] { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.85rem; padding: 0.7rem 0.9rem; transition: border-color 0.15s; }
+    .url-input-wrap input[type=text]:focus { outline: none; border-color: var(--gold-dim); }
+    .url-input-wrap input[type=text]::placeholder { color: var(--muted); }
+    .btn-parse { background: var(--gold); color: #0c0c0d; border: none; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.7rem 1.2rem; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; flex-shrink: 0; }
     .btn-parse:hover { opacity: 0.85; }
     .btn-parse:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .parse-status {
-      margin-top: 0.6rem;
-      font-size: 0.75rem;
-      min-height: 1.2em;
-    }
-
+    .parse-status { margin-top: 0.6rem; font-size: 0.75rem; min-height: 1.2em; }
     .parse-status.loading { color: var(--muted); }
     .parse-status.error   { color: #c0504d; }
     .parse-status.success { color: var(--green); }
 
-    /* ── Instant Win Validation Table ── */
-    .iw-validation {
-      margin-bottom: 2rem;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 0.3s, transform 0.3s;
-    }
+    /* Zone banner */
+    .zone-banner { margin: 1.5rem 0; padding: 0.9rem 1.2rem; border-radius: 6px; font-size: 0.8rem; display: none; align-items: flex-start; gap: 0.75rem; line-height: 1.5; }
+    .zone-banner.visible { display: flex; }
+    .zone-banner .zone-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .zone-banner strong { display: block; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.2rem; opacity: 0.7; }
+    .zone-banner.zone1 { background: #0f1a10; border: 1px solid #2a4a2e; color: #7dcf8a; }
+    .zone-banner.zone2 { background: #0d1a10; border: 1px solid #1e4a28; color: #5ddc96; }
+    .zone-banner.zone3 { background: #1a0e0e; border: 1px solid #4a1e1e; color: #c0504d; }
 
-    .iw-validation.visible { opacity: 1; transform: none; }
+    /* Summary cards */
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; }
+    .summary.visible { opacity: 1; transform: none; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.2rem; }
+    .card-label { font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
+    .card-value { font-size: 1.4rem; font-weight: 500; color: var(--gold); }
+    .card-value.green { color: var(--green); }
+    .card-value.blue  { color: var(--blue); }
 
-    .iw-unknown-banner {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-      padding: 0.8rem 1rem;
-      background: #1a1000;
-      border: 1px solid #5a3a00;
-      border-radius: 6px 6px 0 0;
-      font-size: 0.78rem;
-      color: #f0a030;
-      line-height: 1.5;
-    }
+    /* Table */
+    .table-wrap { overflow-x: auto; opacity: 0; transform: translateY(8px); transition: opacity 0.3s 0.1s, transform 0.3s 0.1s; display: none; }
+    .table-wrap.visible { opacity: 1; transform: none; display: block; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    thead tr { border-bottom: 1px solid var(--border); }
+    th { text-align: right; padding: 0.6rem 0.7rem; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 400; white-space: nowrap; }
+    th:first-child { text-align: left; }
+    td { text-align: right; padding: 0.5rem 0.7rem; border-bottom: 1px solid #242428; white-space: nowrap; color: #dedad0; }
+    td:first-child { text-align: left; }
+    tr.peak-row td { background: var(--peak-bg); color: #ffe566; font-weight: 500; }
+    tr.peak-row td:first-child { border-left: 3px solid var(--gold); padding-left: calc(0.7rem - 3px); }
+    .badge { display: inline-block; background: var(--gold); color: #0c0c0d; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 2px; margin-left: 0.4rem; font-weight: 500; vertical-align: middle; }
+    .pct-label { color: var(--muted); font-size: 0.72rem; }
 
-    .iw-unknown-banner strong {
-      display: block;
-      font-size: 0.68rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 0.2rem;
-      opacity: 0.7;
-    }
+    /* Formula */
+    .formula { margin-top: 1.5rem; padding: 1rem 1.2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 0.76rem; color: var(--muted); line-height: 1.8; opacity: 0; transition: opacity 0.3s 0.2s; display: none; }
+    .formula.visible { opacity: 1; display: block; }
+    .formula span { color: var(--gold-dim); }
+    .formula .formula-row { display: block; }
 
-    .iw-table-wrap { overflow-x: auto; }
-
-    .iw-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
-
-    .iw-table thead tr {
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-    }
-
-    .iw-table th {
-      text-align: left;
-      padding: 0.55rem 0.8rem;
-      font-size: 0.62rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 400;
-    }
-
-    .iw-table th:not(:first-child) { text-align: right; }
-
-    .iw-table td {
-      padding: 0.5rem 0.8rem;
-      border-bottom: 1px solid #242428;
-      color: #dedad0;
-    }
-
-    .iw-table td:not(:first-child) { text-align: right; }
-
-    .iw-table tr.unknown-row td { color: #f0a030; }
-
-    .iw-total-row td {
-      border-top: 1px solid var(--border);
-      border-bottom: none;
-      font-weight: 500;
-      color: var(--gold);
-      background: var(--surface);
-      padding-top: 0.6rem;
-      padding-bottom: 0.6rem;
-    }
-
-    .unknown-tag {
-      display: inline-block;
-      background: #5a3a00;
-      color: #f0a030;
-      font-size: 0.6rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 0.1rem 0.4rem;
-      border-radius: 2px;
-      margin-left: 0.4rem;
-      vertical-align: middle;
-    }
-
+    /* Empty state */
+    .empty { text-align: center; padding: 4rem 2rem; color: var(--muted); font-size: 0.85rem; line-height: 1.8; }
+    .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 1rem; opacity: 0.3; }
     .empty.no-entry { color: #c0504d; }
     .empty.no-entry .empty-icon { opacity: 0.6; }
+
+    /* IW Validation table */
+    .iw-validation { margin-bottom: 2rem; opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; }
+    .iw-validation.visible { opacity: 1; transform: none; }
+    .iw-unknown-banner { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.8rem 1rem; background: #1a1000; border: 1px solid #5a3a00; border-radius: 6px 6px 0 0; font-size: 0.78rem; color: #f0a030; line-height: 1.5; }
+    .iw-unknown-banner strong { display: block; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.2rem; opacity: 0.7; }
+    .iw-table-wrap { overflow-x: auto; }
+    .iw-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .iw-table thead tr { border-bottom: 1px solid var(--border); background: var(--surface); }
+    .iw-table th { text-align: left; padding: 0.55rem 0.8rem; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+    .iw-table th:not(:first-child) { text-align: right; }
+    .iw-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #242428; color: #dedad0; }
+    .iw-table td:not(:first-child) { text-align: right; }
+    .iw-table tr.unknown-row td { color: #f0a030; }
+    .iw-total-row td { border-top: 1px solid var(--border); border-bottom: none; font-weight: 500; color: var(--gold); background: var(--surface); padding-top: 0.6rem; padding-bottom: 0.6rem; }
+    .unknown-tag { display: inline-block; background: #5a3a00; color: #f0a030; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.1rem 0.4rem; border-radius: 2px; margin-left: 0.4rem; vertical-align: middle; }
+
+    /* Simulation panel */
+
+    .btn-simulate {
+      margin-top: 1.5rem;
+      display: none;
+      background: transparent;
+      border: 1px solid var(--gold-dim);
+      border-radius: 4px;
+      color: var(--gold);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.7rem 1.4rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-simulate:hover { background: var(--gold); color: #0c0c0d; }
+    .btn-simulate.visible { display: inline-block; }
+
+    .sim-panel { margin-top: 2rem; opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; }
+    .sim-panel.visible { opacity: 1; transform: none; }
+    .sim-spinner { display: flex; align-items: center; gap: 0.75rem; padding: 1.5rem; color: var(--muted); font-size: 0.82rem; }
+    .spinner-ring { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .sim-table-wrap { overflow-x: auto; }
+    .sim-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .sim-table thead tr { border-bottom: 1px solid var(--border); }
+    .sim-table th { text-align: right; padding: 0.6rem 0.7rem; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 400; white-space: nowrap; }
+    .sim-table th:first-child { text-align: left; }
+    .sim-table td { text-align: right; padding: 0.5rem 0.7rem; border-bottom: 1px solid #242428; color: #dedad0; white-space: nowrap; }
+    .sim-table td:first-child { text-align: left; }
+    .sim-table tr.sim-median td { background: var(--peak-bg); color: #ffe566; font-weight: 500; }
+    .sim-risk { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+    .sim-risk-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; }
+    .sim-risk-card .card-label { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }
+    .sim-risk-card .card-value { font-size: 1.1rem; font-weight: 500; color: var(--gold); }
+    .sim-risk-card .card-value.red { color: #c0504d; }
+    .sim-risk-card .card-value.green { color: var(--green); }
   </style>
 </head>
 <body>
@@ -569,6 +234,13 @@
       </div>
     </div>
     <div class="field">
+      <label for="maxtickets">Max Tickets Per Player</label>
+      <div class="input-wrap">
+        <span class="prefix">#</span>
+        <input type="number" id="maxtickets" min="1" step="1" placeholder="100">
+      </div>
+    </div>
+    <div class="field">
       <label for="salespct">Expected Sale %</label>
       <div class="input-wrap">
         <input type="number" id="salespct" min="1" max="100" step="1" placeholder="50" class="no-prefix has-suffix">
@@ -604,36 +276,37 @@
 
   <!-- Summary cards -->
   <div class="summary" id="summary">
-    <div class="card">
+    <div class="card" id="card-ev">
       <div class="card-label">Overall EV</div>
       <div class="card-value green" id="s-ev">—</div>
     </div>
-    <div class="card">
+    <div class="card" id="card-profit">
       <div class="card-label">Expected Profit</div>
       <div class="card-value green" id="s-profit">—</div>
     </div>
-    <div class="card">
+    <div class="card" id="card-optimal">
       <div class="card-label">Optimal Tickets</div>
       <div class="card-value" id="s-optimal">—</div>
     </div>
-    <div class="card">
+    <div class="card" id="card-cost">
       <div class="card-label">Total Cost</div>
       <div class="card-value" id="s-cost">—</div>
     </div>
-    <div class="card">
+    <div class="card" id="card-prob">
       <div class="card-label">End Prize Win Chance</div>
       <div class="card-value" id="s-prob">—</div>
     </div>
-    <div class="card">
+    <div class="card" id="card-iwev">
       <div class="card-label">Instant Win EV</div>
       <div class="card-value blue" id="s-iwev">—</div>
     </div>
-    <div class="card">
+    <div class="card" id="card-iw">
       <div class="card-label">Instant Win Return</div>
       <div class="card-value blue" id="s-iw">—</div>
     </div>
   </div>
 
+  <!-- Optimum tickets table -->
   <div class="table-wrap" id="table-wrap">
     <div class="empty">
       <span class="empty-icon">🎲</span>
@@ -641,60 +314,235 @@
     </div>
   </div>
 
+  <!-- Formula -->
   <div class="formula" id="formula"></div>
+
+  <!-- Simulation -->
+  <button class="btn-simulate" id="btn-simulate" onclick="triggerSimulation()">▶ Run Simulation</button>
+  <div class="sim-panel" id="sim-panel"></div>
+
 </div>
 
 <script>
   const $ = id => document.getElementById(id);
-  const ids = ['cost','sold','total','iwval','endprize','salespct'];
+  const ids = ['cost','sold','total','maxtickets','iwval','endprize','salespct'];
   $('discount').addEventListener('change', calculate);
   ids.forEach(id => $(id).addEventListener('input', calculate));
 
   const fmt  = (n, dp=2) => '£' + n.toFixed(dp);
-  const fmtp = (n, dp=2) => (n >= 0 ? '+' : '') + '£' + n.toFixed(dp);
 
+  // ── Stored instant wins from parser (for simulation) ──
+  let parsedInstantWins = [];
+
+  // ── Simulation ──
+  function runSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase) {
+    const N_SIMS = 2000;
+    const remaining = totalTickets - ticketsSold; // prizes only exist in unsold tickets
+
+    // Separate prizes into simulated (>= cost) and cost-offset (< cost)
+    // Use remaining tickets for cost offset — that's what the calculator uses
+    const simPrizes = [];
+    let costOffset = 0;
+    for (const p of prizes) {
+      if (p.val < ticketCost) {
+        costOffset += (p.count / remaining) * p.val;
+      } else {
+        simPrizes.push(p);
+      }
+    }
+    const effectiveCost = ticketCost - costOffset;
+
+    // Flatten simulated prizes
+    const prizeValues = [];
+    for (const p of simPrizes)
+      for (let i = 0; i < p.count; i++) prizeValues.push(p.val);
+    const nPrizes = prizeValues.length;
+
+    if (nPrizes === 0) return null;
+
+    const cap = Math.min(maxTickets, remaining);
+    const totalPrizeValue = prizeValues.reduce((s, v) => s + v, 0);
+    const profits = new Float64Array(N_SIMS);
+    const returns = new Float64Array(N_SIMS);
+    const keys = new Float64Array(nPrizes);
+    const order = new Int32Array(nPrizes);
+
+    // For zones 1 & 2: stop only when a big prize has been won and the remaining
+    // prize density no longer justifies continuing. We compare remaining IW value
+    // against its fair share of remaining tickets to detect when the pool has been
+    // "depleted" relative to what you'd expect — i.e. you got lucky early.
+    // For zone 3: always buy max (illustrative — show risk profile regardless).
+    const evThreshold = (zone === 3) ? 0 : 1;
+
+
+    for (let sim = 0; sim < N_SIMS; sim++) {
+      // Assign prizes randomly within the REMAINING ticket pool only
+      // keys[i] is a fractional position in [0, 1) within remaining tickets
+      for (let i = 0; i < nPrizes; i++) { keys[i] = Math.random(); order[i] = i; }
+      order.sort((a, b) => keys[a] - keys[b]);
+
+      let remainingPrizeValue = totalPrizeValue;
+      let spent = 0, won = 0, currentTicket = 0, prizePtr = 0;
+
+      while (currentTicket < cap) {
+        // EV check: compare remaining IW density + end prize against cost
+        // Stop if remaining prizes are exhausted relative to remaining tickets
+        // (i.e. you've won more than your fair share — carry on if still on track)
+        const remainingTickets = remaining - currentTicket;
+        const iwEV = remainingPrizeValue / (remainingTickets * effectiveCost);
+        const endEV = (endPrize > 0 && Tbase > 0)
+          ? endPrize / ((Tbase + currentTicket + 1) * effectiveCost)
+          : 0;
+        const ev = iwEV + endEV;
+        if (ev < evThreshold) break;
+        const batchEnd = Math.min(currentTicket + 1, cap);
+        spent += effectiveCost;
+        // batchFrac is within remaining ticket pool (0..1)
+        const batchFrac = batchEnd / remaining;
+        while (prizePtr < nPrizes && keys[order[prizePtr]] < batchFrac) {
+          const val = prizeValues[order[prizePtr++]];
+          won += val;
+          remainingPrizeValue -= val;
+        }
+        currentTicket = batchEnd;
+      }
+      profits[sim] = won - spent;
+      returns[sim] = won;
+    }
+    return { profits, returns, effectiveCost, evThreshold, costOffset };
+  }
+
+  function renderSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase) {
+    const panel = $('sim-panel');
+    panel.innerHTML = `
+      <div class="section-label">Simulation (${(2000).toLocaleString()} runs)</div>
+      <div class="sim-spinner">
+        <div class="spinner-ring"></div>
+        Simulating outcomes…
+      </div>`;
+    panel.classList.add('visible');
+
+    // Use setTimeout to let the spinner render before blocking
+    setTimeout(() => {
+      const sim = runSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase);
+
+      if (!sim) {
+        panel.innerHTML = '';
+        panel.classList.remove('visible');
+        return;
+      }
+
+      const { profits, returns, effectiveCost, costOffset } = sim;
+      const sortedProfits = Array.from(profits).sort((a, b) => a - b);
+      const n = sortedProfits.length;
+      const avg = profits.reduce((s, v) => s + v, 0) / n;
+      const pLoss   = sortedProfits.filter(v => v < 0).length / n * 100;
+      const pProfit = sortedProfits.filter(v => v > 0).length / n * 100;
+      const worst   = sortedProfits[0];
+      const best    = sortedProfits[n - 1];
+      // Build sorted pairs of (profit, return) for percentile display
+      const pairs = Array.from(profits).map((p, i) => ({ p, r: returns[i] })).sort((a, b) => a.p - b.p);
+
+      const pcts = [10, 25, 50, 75, 90, 95, 99];
+      const pctVals = pcts.map(p => ({ pct: p, profit: pairs[Math.floor(p / 100 * n)].p, ret: pairs[Math.floor(p / 100 * n)].r }));
+
+      let html = `<div class="section-label">Simulation (${n.toLocaleString()} runs)</div>`;
+
+      if (costOffset > 0) {
+        html += `<div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.75rem">
+          Sub-cost prizes (< £${ticketCost.toFixed(4)}/ticket) folded into effective cost:
+          <span style="color:var(--gold)">£${effectiveCost.toFixed(4)}/ticket</span>
+        </div>`;
+      }
+
+      html += `<div class="sim-table-wrap"><table class="sim-table">
+        <thead><tr>
+          <th>Percentile</th>
+          <th>Return</th>
+          <th>Profit</th>
+        </tr></thead><tbody>`;
+
+      const worstPair = pairs[0], bestPair = pairs[n-1];
+      html += `<tr><td>Worst case</td><td>${fmt(worstPair.r)}</td><td style="color:${worstPair.p<0?'#c0504d':'var(--green)'}">${fmt(worstPair.p)}</td></tr>`;
+
+      for (const { pct, profit, ret } of pctVals) {
+        const isMedian = pct === 50;
+        html += `<tr class="${isMedian ? 'sim-median' : ''}">
+          <td>${pct}th percentile${isMedian ? ' (median)' : ''}</td>
+          <td>${fmt(ret)}</td>
+          <td style="color:${profit<0?'#c0504d':'var(--green)'}">${fmt(profit)}</td>
+        </tr>`;
+      }
+
+      html += `<tr><td>Best case</td><td>${fmt(bestPair.r)}</td><td style="color:var(--green)">${fmt(bestPair.p)}</td></tr>`;
+      html += '</tbody></table></div>';
+
+      html += `<div class="sim-risk">
+        <div class="sim-risk-card"><div class="card-label">Avg Profit</div><div class="card-value ${avg>=0?'green':'red'}">${fmt(avg)}</div></div>
+        <div class="sim-risk-card"><div class="card-label">P(Loss)</div><div class="card-value red">${pLoss.toFixed(1)}%</div></div>
+        <div class="sim-risk-card"><div class="card-label">P(Profit)</div><div class="card-value green">${pProfit.toFixed(1)}%</div></div>
+        <div class="sim-risk-card"><div class="card-label">Max Loss</div><div class="card-value red">${fmt(Math.abs(worst))}</div></div>
+        <div class="sim-risk-card"><div class="card-label">Max Gain</div><div class="card-value green">${fmt(best)}</div></div>
+      </div>`;
+
+      panel.innerHTML = html;
+    }, 30);
+  }
+
+  // ── Main calculate function ──
   function calculate() {
-    const baseCost   = parseFloat($('cost').value);
+    const baseCost    = parseFloat($('cost').value);
     const discountPct = parseFloat($('discount').value) || 0;
     const cost        = baseCost * (1 - discountPct / 100);
 
-    // Update effective cost display
     const ecEl = $('effective-cost');
     if (!isNaN(baseCost) && discountPct > 0) {
       ecEl.innerHTML = `Effective price: <span>£${cost.toFixed(4)}</span>`;
     } else {
       ecEl.textContent = '';
     }
-    const sold     = parseFloat($('sold').value);
-    const total    = parseFloat($('total').value);
-    const iwval    = parseFloat($('iwval').value)   || 0;
-    const endprize = parseFloat($('endprize').value) || 0;
-    const salespct = parseFloat($('salespct').value) || 100;
+
+    const sold      = parseFloat($('sold').value);
+    const total     = parseFloat($('total').value);
+    const maxInput  = parseFloat($('maxtickets').value);
+    const iwval     = parseFloat($('iwval').value)    || 0;
+    const endprize  = parseFloat($('endprize').value) || 0;
+    const salespct  = parseFloat($('salespct').value) || 100;
 
     const summary   = $('summary');
     const tableWrap = $('table-wrap');
     const formulaEl = $('formula');
     const banner    = $('zone-banner');
+    const simPanel  = $('sim-panel');
 
     const reset = (msg) => {
       summary.classList.remove('visible');
       tableWrap.classList.remove('visible');
       formulaEl.classList.remove('visible');
+      simPanel.classList.remove('visible');
+      simPanel.innerHTML = '';
       banner.className = 'zone-banner';
       tableWrap.innerHTML = `<div class="empty"><span class="empty-icon">🎲</span>${msg}</div>`;
     };
 
-    // Validate required fields
+    // Hide all cards initially then show selectively
+    ['card-profit','card-optimal','card-cost','card-prob','card-iwev','card-iw'].forEach(id => {
+      $(id).style.display = '';
+    });
+
     if (isNaN(cost) || isNaN(sold) || isNaN(total) || cost <= 0 || sold < 0 || total < 1 || sold >= total) {
       reset('Enter competition details above to see results.');
       return;
     }
 
-    // Validate expected sale % implies at least as many tickets as already sold
+    const maxTickets = isNaN(maxInput) || maxInput < 1 ? total - sold : Math.min(maxInput, total - sold);
+
     const expectedSold = total * (salespct / 100);
     if (expectedSold < sold) {
       summary.classList.remove('visible');
       formulaEl.classList.remove('visible');
+      simPanel.classList.remove('visible');
+      simPanel.innerHTML = '';
       banner.className = 'zone-banner zone3 visible';
       $('zone-icon').textContent = '⚠️';
       $('zone-title').textContent = 'Invalid Configuration';
@@ -704,58 +552,41 @@
       return;
     }
 
-    // Core values
-    const remaining     = total - sold;               // tickets still available
-    const iwEvPerTicket = remaining > 0 ? iwval / remaining : 0; // instant win EV per remaining ticket
-    const cAdj          = cost - iwEvPerTicket;        // effective cost after instant win subsidy
-    // Tbase = expected total tickets sold by others (already sold + future sales),
-    // NOT including your own purchase. Your n tickets are added on top.
-    // Win chance = n / (Tbase + n), giving proper diminishing returns as n grows.
+    const remaining     = total - sold;
+    const iwEvPerTicket = remaining > 0 ? iwval / remaining : 0;
+    const cAdj          = cost - iwEvPerTicket;
     const Tbase         = Math.max(sold, total * (salespct / 100));
 
-    // Functions of n (tickets YOU buy)
-    const iwReturn      = n => iwEvPerTicket * n;
-    const endReturn     = n => endprize * n / (Tbase + n);
-    const totalReturn   = n => iwReturn(n) + endReturn(n);
-    const totalProfit   = n => totalReturn(n) - cost * n;
-    const evMultiplier  = n => totalReturn(n) / (cost * n);
-    const endChance     = n => n / (Tbase + n);
+    const iwReturn     = n => iwEvPerTicket * n;
+    const endReturn    = n => endprize * n / (Tbase + n);
+    const totalReturn  = n => iwReturn(n) + endReturn(n);
+    const totalProfit  = n => totalReturn(n) - cost * n;
+    const evMultiplier = n => totalReturn(n) / (cost * n);
+    const endChance    = n => n / (Tbase + n);
 
-    // Determine zone and optimal n
     let zone, optN, rawN;
 
-    // Helper: find the true profit-maximising n by brute-force scan up to a cap.
-    // Needed because Tothers() has a floor at `sold` which makes the closed-form
-    // formula unreliable when Tbase < sold or when a cap truncates past the peak.
     const findPeakN = (cap) => {
       let bestProfit = -Infinity, bestN = 0;
       for (let n = 1; n <= cap; n++) {
         const p = totalProfit(n);
         if (p > bestProfit) { bestProfit = p; bestN = n; }
-        // Once profit has turned and is clearly falling, we can stop early
         if (p < bestProfit - 1 && n > 10) break;
       }
       return { n: bestN, profit: bestProfit };
     };
 
-    const cap = remaining;
+    const cap = Math.min(remaining, maxTickets);
 
     if (cAdj <= 0) {
-      // Zone 1: instant wins alone cover ticket cost — buy as many as allowed
       zone = 1;
       optN = cap;
     } else {
-      // Optimal n using adjusted cost against expected pool (closed-form starting point)
       rawN = Math.sqrt((endprize * Tbase) / cAdj) - Tbase;
-
       if (rawN <= 0 || totalProfit(1) <= 0) {
-        // Zone 3: no positive EV
         zone = 3;
       } else {
         zone = 2;
-        // Use closed-form as a guide but verify with a scan — the Tothers floor
-        // or the cap can push optN into negative territory
-        const formulaN = Math.min(Math.round(rawN), cap);
         const { n: peakN, profit: peakProfit } = findPeakN(cap);
         if (peakProfit <= 0) {
           zone = 3;
@@ -765,237 +596,249 @@
       }
     }
 
-    // Zone 3 — no entry
+    const hasInstantWins = iwval > 0 && parsedInstantWins.length > 0;
+    if (hasInstantWins) {
+      _simArgs = { prizes: parsedInstantWins, totalTickets: total, ticketsSold: sold, ticketCost: cost, maxTickets, zone, endPrize: endprize, Tbase };
+    } else {
+      _simArgs = null;
+    }
+    const zone2EndOnly   = zone === 2 && iwval === 0;
+
+    // ── Zone 3 ──
     if (zone === 3) {
       banner.className = 'zone-banner zone3 visible';
       $('zone-icon').textContent = '🚫';
       $('zone-title').textContent = 'Do Not Enter';
-      $('zone-msg').textContent = 'There is no positive expected outcome for this competition. The prizes are too small relative to the ticket cost and competition size. Showing single ticket EV for reference.';
+      $('zone-msg').textContent = 'There is no positive expected outcome for this competition. Showing single ticket EV for reference.';
 
-      // Show summary at n=1 for reference
-      $('s-optimal').textContent = '—';
-      $('s-cost').textContent    = fmt(cost);
-      $('s-prob').textContent    = (endChance(1) * 100).toFixed(2) + '%';
-      $('s-iwev').textContent    = iwval > 0 ? (iwEvPerTicket / cost).toFixed(4) + 'x' : 'N/A';
-      $('s-iw').textContent      = fmt(iwReturn(1));
-      $('s-profit').textContent  = fmt(totalProfit(1));
-      $('s-ev').textContent      = evMultiplier(1).toFixed(2) + 'x';
+      // Zone 3: show only Overall EV and Instant Win EV cards
+      ['card-profit','card-optimal','card-cost','card-prob','card-iw'].forEach(id => $(id).style.display = 'none');
+      $('card-ev').style.display   = '';
+      $('card-iwev').style.display = '';
+      $('s-ev').textContent   = evMultiplier(1).toFixed(2) + 'x';
+      $('s-iwev').textContent = iwval > 0 ? (iwEvPerTicket / cost).toFixed(4) + 'x' : 'N/A';
       summary.classList.add('visible');
 
-      // Show table at n=1 only
-      const p1 = totalProfit(1);
-      let html = `<table>
-        <thead><tr>
-          <th style="text-align:left">Tickets</th>
-          <th>Cost</th>
-          <th>End Prize Chance</th>
-          <th>Instant Win Return</th>
-          <th>End Prize Return</th>
-          <th>Total Return</th>
-          <th>Total Profit</th>
-          <th>Overall EV</th>
-          <th></th>
-        </tr></thead><tbody>
-        <tr>
-          <td>1</td>
-          <td>${fmt(cost)}</td>
-          <td>${(endChance(1) * 100).toFixed(2)}%</td>
-          <td>${fmt(iwReturn(1))}</td>
-          <td>${fmt(endReturn(1))}</td>
-          <td>${fmt(totalReturn(1))}</td>
-          <td>${fmt(p1)}</td>
-          <td>${evMultiplier(1).toFixed(2)}x</td>
-          <td><span class="pct-label">reference</span></td>
-        </tr></tbody></table>`;
-      tableWrap.innerHTML = html;
-      tableWrap.classList.add('visible');
+      // No reference table in Zone 3
+      tableWrap.innerHTML = '';
+      tableWrap.classList.remove('visible');
       formulaEl.classList.remove('visible');
+
+      // Show sim button if instant wins available
+      if (hasInstantWins) {
+        showSimButton(true);
+      } else {
+        showSimButton(false);
+      }
       return;
     }
 
-    // Zone banner
+    // ── Zone banners ──
     if (zone === 1) {
       banner.className = 'zone-banner zone1 visible';
       $('zone-icon').textContent = '✅';
       $('zone-title').textContent = 'Zone 1 — Instant Wins Cover Ticket Cost';
-      $('zone-msg').textContent = `Instant win EV: ${(iwEvPerTicket / cost).toFixed(4)}x your money (${fmt(iwval)} prizes across ${remaining} remaining × ${fmt(cost)} tickets). Entry is profitable on instant wins alone — end prize is bonus upside. Buying maximum allowed tickets.`;
+      $('zone-msg').textContent = `Instant win EV: ${(iwEvPerTicket/cost).toFixed(4)}x your money (${fmt(iwval)} prizes across ${remaining} remaining × £${cost.toFixed(4)} tickets). Entry is profitable on instant wins alone — end prize is bonus upside.`;
     } else {
       banner.className = 'zone-banner zone2 visible';
       $('zone-icon').textContent = '📊';
       $('zone-title').textContent = iwval > 0 ? 'Zone 2 — Combined EV is Positive' : 'Zone 2 — End Prize Only';
-      $('zone-msg').textContent = iwval > 0 ? `Instant wins partially offset ticket cost (effective cost: ${fmt(cAdj)}/ticket). Combined with the end prize, there is a profitable optimal entry point.` : `No instant wins — end prize only. Optimal entry based purely on end prize EV.`;
+      $('zone-msg').textContent   = iwval > 0
+        ? `Instant wins partially offset ticket cost (effective cost: ${fmt(cAdj)}/ticket). Combined with the end prize, there is a profitable optimal entry point.`
+        : `No instant wins — end prize only. Optimal entry based purely on end prize EV.`;
     }
 
-    // Summary cards
+    // ── Summary cards — Zone 1 shows only Overall EV ──
     const peakProfit = totalProfit(optN);
-    $('s-optimal').textContent = optN;
-    $('s-cost').textContent    = fmt(cost * optN);
-    $('s-prob').textContent    = (endChance(optN) * 100).toFixed(2) + '%';
-    $('s-iwev').textContent    = iwval > 0 ? (iwEvPerTicket / cost).toFixed(4) + 'x' : 'N/A';
-    $('s-iw').textContent      = fmt(iwReturn(optN));
-    $('s-profit').textContent  = fmt(peakProfit);
-    $('s-ev').textContent      = evMultiplier(optN).toFixed(2) + 'x';
+
+    if (zone === 1) {
+      ['card-profit','card-optimal','card-cost','card-prob','card-iw'].forEach(id => {
+        $(id).style.display = 'none';
+      });
+      $('card-iwev').style.display = '';
+      $('s-ev').textContent   = evMultiplier(optN).toFixed(2) + 'x';
+      $('s-iwev').textContent = iwval > 0 ? (iwEvPerTicket / cost).toFixed(4) + 'x' : 'N/A';
+    } else {
+      ['card-profit','card-optimal','card-cost','card-prob','card-iwev','card-iw'].forEach(id => {
+        $(id).style.display = '';
+      });
+      $('s-optimal').textContent = optN;
+      $('s-cost').textContent    = fmt(cost * optN);
+      $('s-prob').textContent    = (endChance(optN) * 100).toFixed(2) + '%';
+      $('s-iwev').textContent    = iwval > 0 ? (iwEvPerTicket / cost).toFixed(4) + 'x' : 'N/A';
+      $('s-iw').textContent      = fmt(iwReturn(optN));
+      $('s-profit').textContent  = fmt(peakProfit);
+      $('s-ev').textContent      = evMultiplier(optN).toFixed(2) + 'x';
+    }
     summary.classList.add('visible');
 
-    // Build table rows: symmetric around peak
-    // Below peak: 5% decrements down to 0 (left side of curve, lower n)
-    // Above peak: same % decrements on the right side of curve (higher n)
-    const seen = new Set();
-    const rows = [];
+    // ── Optimum table — Zone 1 skips it ──
+    if (zone === 1) {
+      tableWrap.innerHTML = '';
+      tableWrap.classList.remove('visible');
+      formulaEl.classList.remove('visible');
+    } else {
+      const seen = new Set();
+      const rows = [];
 
-    const addRow = (n, label, pct, side) => {
-      if (n < 1 || seen.has(n)) return;
-      seen.add(n);
-      rows.push({ n, label, pct, side });
-    };
+      const addRow = (n, label, pct, side) => {
+        if (n < 1 || seen.has(n)) return;
+        seen.add(n);
+        rows.push({ n, label, pct, side });
+      };
 
-    addRow(optN, 'optimal', 100, 'peak');
+      addRow(optN, 'optimal', 100, 'peak');
 
-    // Below-peak rows: search downward from optN
-    for (let pct = 95; pct >= 0; pct -= 5) {
-      const target = peakProfit * (pct / 100);
-      let bestN = 1, bestDiff = Infinity;
-      for (let n = optN - 1; n >= 1; n--) {
-        const diff = Math.abs(totalProfit(n) - target);
-        if (diff < bestDiff) { bestDiff = diff; bestN = n; }
-        if (totalProfit(n) < target - 1) break;
+      for (let pct = 95; pct >= 0; pct -= 5) {
+        const target = peakProfit * (pct / 100);
+        let bestN = 1, bestDiff = Infinity;
+        for (let n = optN - 1; n >= 1; n--) {
+          const diff = Math.abs(totalProfit(n) - target);
+          if (diff < bestDiff) { bestDiff = diff; bestN = n; }
+          if (totalProfit(n) < target - 1) break;
+        }
+        addRow(bestN, pct + '% of peak', pct, 'below');
       }
-      addRow(bestN, pct + '% of peak', pct, 'below');
-    }
 
-    // Above-peak rows: search upward from optN for where profit drops to same % thresholds
-    for (let pct = 95; pct >= 90; pct -= 5) {
-      const target = peakProfit * (pct / 100);
-      let bestN = null, bestDiff = Infinity;
-      for (let n = optN + 1; n <= remaining; n++) {
-        const p = totalProfit(n);
-        const diff = Math.abs(p - target);
-        if (diff < bestDiff) { bestDiff = diff; bestN = n; }
-        // Stop once profit has dropped well below target
-        if (p < target - 1) break;
+      for (let pct = 95; pct >= 90; pct -= 5) {
+        const target = peakProfit * (pct / 100);
+        let bestN = null, bestDiff = Infinity;
+        for (let n = optN + 1; n <= cap; n++) {
+          const p = totalProfit(n);
+          const diff = Math.abs(p - target);
+          if (diff < bestDiff) { bestDiff = diff; bestN = n; }
+          if (p < target - 1) break;
+        }
+        if (bestN) addRow(bestN, pct + '% of peak', pct + 1000, 'above');
       }
-      if (bestN) addRow(bestN, pct + '% of peak', pct + 1000, 'above'); // pct+1000 to distinguish from below
-    }
 
-    rows.sort((a, b) => b.n - a.n);
+      rows.sort((a, b) => b.n - a.n);
 
-    // Render
-    let html = `<table>
-      <thead><tr>
-        <th>Tickets</th>
-        <th>Cost</th>
-        <th>End Prize Chance</th>
-        <th>Instant Win Return</th>
-        <th>End Prize Return</th>
-        <th>Total Return</th>
-        <th>Total Profit</th>
-        <th>Overall EV</th>
-        <th></th>
+      let html = `<table><thead><tr>
+        <th>Tickets</th><th>Cost</th><th>End Prize Chance</th>
+        <th>Instant Win Return</th><th>End Prize Return</th><th>Total Return</th>
+        <th>Total Profit</th><th>Overall EV</th><th></th>
       </tr></thead><tbody>`;
 
-    for (const { n, label, pct, side } of rows) {
-      const isPeak = side === 'peak';
-      const isAbove = side === 'above';
-      // Derive display label for above-peak rows
-      const displayLabel = isAbove ? label.replace(/^(\d+)% of peak/, '$1% of peak') : label;
-      html += `<tr class="${isPeak ? 'peak-row' : ''}">
-        <td>${n}</td>
-        <td>${fmt(cost * n)}</td>
-        <td>${(endChance(n) * 100).toFixed(2)}%</td>
-        <td>${fmt(iwReturn(n))}</td>
-        <td>${fmt(endReturn(n))}</td>
-        <td>${fmt(totalReturn(n))}</td>
-        <td>${fmt(totalProfit(n))}</td>
-        <td>${evMultiplier(n).toFixed(2)}x</td>
-        <td>${isPeak
-          ? '<span class="badge">optimal</span>'
-          : `<span class="pct-label">${displayLabel}</span>`
-        }</td>
-      </tr>`;
+      for (const { n, label, pct, side } of rows) {
+        const isPeak  = side === 'peak';
+        const isAbove = side === 'above';
+        const displayLabel = isAbove ? label.replace(/^(\d+)% of peak/, '$1% of peak') : label;
+        html += `<tr class="${isPeak ? 'peak-row' : ''}">
+          <td>${n}</td>
+          <td>${fmt(cost * n)}</td>
+          <td>${(endChance(n) * 100).toFixed(2)}%</td>
+          <td>${fmt(iwReturn(n))}</td>
+          <td>${fmt(endReturn(n))}</td>
+          <td>${fmt(totalReturn(n))}</td>
+          <td>${fmt(totalProfit(n))}</td>
+          <td>${evMultiplier(n).toFixed(2)}x</td>
+          <td>${isPeak ? '<span class="badge">optimal</span>' : `<span class="pct-label">${displayLabel}</span>`}</td>
+        </tr>`;
+      }
+
+      html += '</tbody></table>';
+      tableWrap.innerHTML = html;
+      tableWrap.classList.add('visible');
+
+      const formulaLines = zone === 1
+        ? ``
+        : `<span class="formula-row">Instant win EV/ticket = ${fmt(iwval)} / ${remaining} = <span>${fmt(iwEvPerTicket)}</span></span>
+           <span class="formula-row">Effective cost (c_adj) = ${fmt(cost)} − ${fmt(iwEvPerTicket)} = <span>${fmt(cAdj)}</span></span>
+           <span class="formula-row">Expected pool excl. your tickets (Tbase) = max(sold, ${total} × ${salespct}%) = <span>${Tbase}</span></span>
+           <span class="formula-row">Win chance = n / (Tbase + n)</span>
+           <span class="formula-row">Optimal n = √(end_prize × Tbase / c_adj) − Tbase = √(${endprize} × ${Tbase} / ${cAdj.toFixed(4)}) − ${Tbase} = <span>${rawN ? rawN.toFixed(4) : '—'}</span> ≈ <span>${optN}</span></span>`;
+
+      formulaEl.innerHTML = formulaLines;
+      formulaEl.classList.add('visible');
     }
 
-    html += '</tbody></table>';
-    tableWrap.innerHTML = html;
-    tableWrap.classList.add('visible');
-
-    // Formula breakdown
-    const formulaLines = zone === 1
-      ? `<span class="formula-row">Instant win EV/ticket = remaining_iw_value / remaining_tickets = ${fmt(iwval)} / ${remaining} = <span>${fmt(iwEvPerTicket)}</span></span>
-         <span class="formula-row">Effective cost = ticket cost − instant win EV = ${fmt(cost)} − ${fmt(iwEvPerTicket)} = <span>${fmt(cAdj)}</span> (≤ 0, so Zone 1)</span>
-         <span class="formula-row">Total profit (${optN} tickets) = ${fmt(iwReturn(optN))} iw + ${fmt(endReturn(optN))} end prize − ${fmt(cost * optN)} cost = <span>${fmt(peakProfit)}</span></span>`
-      : `<span class="formula-row">Instant win EV/ticket = ${fmt(iwval)} / ${remaining} = <span>${fmt(iwEvPerTicket)}</span></span>
-         <span class="formula-row">Effective cost (c_adj) = ${fmt(cost)} − ${fmt(iwEvPerTicket)} = <span>${fmt(cAdj)}</span></span>
-         <span class="formula-row">Expected pool excl. your tickets (Tbase) = max(sold, ${total} × ${salespct}%) = <span>${Tbase}</span></span>
-         <span class="formula-row">Win chance = n / (Tbase + n) — your tickets added on top of expected pool</span>
-         <span class="formula-row">Optimal n = √(end_prize × Tbase / c_adj) − Tbase = √(${endprize} × ${Tbase} / ${cAdj.toFixed(4)}) − ${Tbase} = <span>${rawN ? rawN.toFixed(4) : '—'}</span> ≈ <span>${optN}</span> </span>`;
-
-    formulaEl.innerHTML = formulaLines;
-    formulaEl.classList.add('visible');
+    // ── Simulation ──
+    // Zone 1: always simulate
+    // Zone 2 combined: simulate
+    // Zone 2 end prize only: no simulation
+    // Zone 3: handled above (simulate if instant wins)
+    if (zone === 1 || (zone === 2 && !zone2EndOnly)) {
+      if (hasInstantWins) {
+        showSimButton(true);
+      } else {
+        showSimButton(false);
+      }
+    } else {
+      showSimButton(false);
+    }
   }
-  const WORKER_URL = 'https://raffle-parser.charles-flynn.workers.dev';
 
+
+  // Simulation state — stored so button can re-use current values
+  let _simArgs = null;
+
+  function showSimButton(show) {
+    const btn = $('btn-simulate');
+    const panel = $('sim-panel');
+    if (show) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+    panel.classList.remove('visible');
+    panel.innerHTML = '';
+  }
+
+  function triggerSimulation() {
+    if (!_simArgs) return;
+    const { prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase } = _simArgs;
+    renderSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase);
+  }
+
+  // ── Worker URL & site discounts ──
+  const WORKER_URL = 'https://raffle-parser.charles-flynn.workers.dev';
   const SITE_DISCOUNTS = {
     'stealthcompetitions.co.uk': '22.5',
     'lincolnshire-competitions.co.uk': '10',
     'speedcompetitions.co.uk': '10',
   };
-
   function discountForUrl(url) {
-    try {
-      const host = new URL(url).hostname.replace('www.', '');
-      return SITE_DISCOUNTS[host] ?? '0';
-    } catch {
-      return '0';
-    }
+    try { const h = new URL(url).hostname.replace('www.',''); return SITE_DISCOUNTS[h] ?? '0'; }
+    catch { return '0'; }
   }
 
-
+  // ── URL parser ──
   async function parseUrl() {
     const url = $('comp-url').value.trim();
     if (!url) return;
-
-    const btn    = $('btn-parse');
-    const status = $('parse-status');
+    const btn = $('btn-parse'), status = $('parse-status');
     btn.disabled = true;
     status.className = 'parse-status loading';
     status.textContent = 'Fetching and analysing competition…';
     $('iw-validation').classList.remove('visible');
     $('iw-validation').innerHTML = '';
+    parsedInstantWins = [];
 
     try {
-      const res = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      });
-
+      const res  = await fetch(WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({url}) });
       const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Unknown error from parser');
 
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || 'Unknown error from parser');
-      }
-
-      // Auto-select discount for known sites
       $('discount').value = discountForUrl(url);
-
-      // Populate input fields
       const f = data.fields;
       $('cost').value     = f.ticket_cost   ?? '';
       $('sold').value     = f.tickets_sold  ?? '';
       $('total').value    = f.total_tickets ?? '';
       $('endprize').value = f.end_prize     ?? '';
-      $('iwval').value    = f.iw_total      ?? '';
-      $('salespct').value = f.sales_pct     ?? 100;
+      $('iwval').value       = f.iw_total             ?? '';
+      $('salespct').value    = f.sales_pct            ?? 100;
+      $('maxtickets').value  = f.max_tickets_per_user ?? '';
 
-      // Render instant win validation table
+      // Store parsed instant wins for simulation
+      parsedInstantWins = (data.instant_wins || [])
+        .filter(iw => iw.remaining > 0 && iw.value !== null)
+        .map(iw => ({ val: iw.value, count: iw.remaining }));
+
       renderIwValidation(data.instant_wins || [], data.has_unknowns, f.iw_total);
-
       status.className = 'parse-status success';
       status.textContent = '✓ Competition imported — please verify instant win values below before relying on results.';
-
-      // Trigger recalculation
       calculate();
-
     } catch (err) {
       status.className = 'parse-status error';
       status.textContent = '✗ ' + err.message;
@@ -1004,39 +847,24 @@
     }
   }
 
+  // ── IW validation table ──
   function renderIwValidation(wins, hasUnknowns, knownTotal) {
     const el = $('iw-validation');
-    if (!wins.length) { el.innerHTML = ''; return; }
-
-    // Filter out zero-remaining (already done server side but be safe)
     const visible = wins.filter(w => w.remaining > 0);
     if (!visible.length) { el.innerHTML = ''; return; }
 
     let html = '';
-
     if (hasUnknowns) {
-      html += `<div class="iw-unknown-banner">
-        <span style="font-size:1.2rem;flex-shrink:0">⚠️</span>
-        <div>
-          <strong>Unknown Instant Win Values Detected</strong>
-          The highlighted prizes below could not be valued automatically.
-          Please calculate their total value manually and add it to the
-          Remaining Instant Win Value field above.
-        </div>
-      </div>`;
+      html += `<div class="iw-unknown-banner"><span style="font-size:1.2rem;flex-shrink:0">⚠️</span>
+        <div><strong>Unknown Instant Win Values Detected</strong>
+        The highlighted prizes below could not be valued automatically. Please calculate their total value manually and add it to the Remaining Instant Win Value field above.</div></div>`;
     }
 
-    html += `<div class="iw-table-wrap"><table class="iw-table">
-      <thead><tr>
-        <th>Prize</th>
-        <th>Remaining</th>
-        <th>Unit Value</th>
-        <th>Total Value</th>
-      </tr></thead><tbody>`;
+    html += `<div class="iw-table-wrap"><table class="iw-table"><thead><tr>
+      <th>Prize</th><th>Remaining</th><th>Unit Value</th><th>Total Value</th>
+    </tr></thead><tbody>`;
 
-    let knownSum = 0;
-    let unknownCount = 0;
-
+    let knownSum = 0, unknownCount = 0;
     for (const iw of visible) {
       const isUnknown = iw.value === null;
       const unitVal   = isUnknown ? '—' : '£' + iw.value.toFixed(2);
@@ -1045,15 +873,13 @@
       else unknownCount++;
 
       html += `<tr class="${isUnknown ? 'unknown-row' : ''}" data-remaining="${iw.remaining}">
-        <td>${iw.description}${isUnknown ? `<span class="unknown-tag">unknown</span>` : ''}</td>
+        <td>${iw.description}${isUnknown ? '<span class="unknown-tag">unknown</span>' : ''}</td>
         <td>${iw.remaining}</td>
         <td>${isUnknown
           ? `<div style="display:flex;align-items:center;gap:0.3rem;justify-content:flex-end">
                <span style="color:var(--muted);font-size:0.8rem">£</span>
                <input type="number" min="0" step="any" placeholder="0.00"
-                 style="width:80px;background:var(--bg);border:1px solid var(--gold-dim);border-radius:3px;
-                        color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;
-                        padding:0.25rem 0.4rem;text-align:right;"
+                 style="width:80px;background:var(--bg);border:1px solid var(--gold-dim);border-radius:3px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;padding:0.25rem 0.4rem;text-align:right;"
                  oninput="updateUnknownIw(this)">
                ${iw.unknown_reason ? `<br><span style="font-size:0.7rem;opacity:0.5">${iw.unknown_reason}</span>` : ''}
              </div>`
@@ -1062,16 +888,13 @@
       </tr>`;
     }
 
-    // Totals row
     html += `<tr class="iw-total-row">
       <td>Known Total${unknownCount > 0 ? ` <span style="font-size:0.7rem;font-weight:400;color:var(--muted)">(${unknownCount} unknown prize${unknownCount>1?'s':''} — enter values above)</span>` : ''}</td>
-      <td></td>
-      <td></td>
+      <td></td><td></td>
       <td class="iw-grand-total">£${knownSum.toFixed(2)}</td>
     </tr>`;
 
     html += '</tbody></table></div>';
-
     el.innerHTML = html;
     el.classList.add('visible');
   }
@@ -1080,43 +903,37 @@
     const row = input.closest('tr');
     const remaining = parseFloat(row.dataset.remaining) || 0;
     const unitVal   = parseFloat(input.value) || 0;
-    const rowTotal  = row.querySelector('.iw-row-total');
+    row.querySelector('.iw-row-total').textContent = unitVal > 0 ? '£' + (unitVal * remaining).toFixed(2) : '—';
 
-    // Update the row total cell
-    rowTotal.textContent = unitVal > 0 ? '£' + (unitVal * remaining).toFixed(2) : '—';
-
-    // Recompute the full known IW total from all rows
     const table = input.closest('table');
     let newTotal = 0;
     table.querySelectorAll('tbody tr[data-remaining]').forEach(r => {
       const rem = parseFloat(r.dataset.remaining) || 0;
       const inp = r.querySelector('input[type=number]');
       if (inp) {
-        // Unknown row — use manually entered value if present
-        const v = parseFloat(inp.value) || 0;
-        newTotal += v * rem;
+        newTotal += (parseFloat(inp.value) || 0) * rem;
       } else {
-        // Known row — read from the total cell
         const cell = r.querySelector('.iw-row-total');
-        if (cell) {
-          const v = parseFloat(cell.textContent.replace('£','')) || 0;
-          newTotal += v;
-        }
+        if (cell) newTotal += parseFloat(cell.textContent.replace('£','')) || 0;
       }
     });
 
-    // Update the known total row
-    const totalCell = table.querySelector('.iw-grand-total');
-    if (totalCell) totalCell.textContent = '£' + newTotal.toFixed(2);
+    // Also update parsedInstantWins for this unknown entry
+    // Rebuild from table rows
+    parsedInstantWins = [];
+    table.querySelectorAll('tbody tr[data-remaining]').forEach(r => {
+      const rem = parseFloat(r.dataset.remaining) || 0;
+      const inp = r.querySelector('input[type=number]');
+      const v = inp ? (parseFloat(inp.value) || 0) : parseFloat(r.querySelector('.iw-row-total')?.textContent?.replace('£','') || 0) / rem;
+      if (v > 0 && rem > 0) parsedInstantWins.push({ val: v, count: rem });
+    });
 
-    // Push updated total into the iwval input and recalculate
+    table.querySelector('.iw-grand-total').textContent = '£' + newTotal.toFixed(2);
     $('iwval').value = newTotal.toFixed(2);
     calculate();
   }
 
-  // Allow pressing Enter in URL field
   $('comp-url').addEventListener('keydown', e => { if (e.key === 'Enter') parseUrl(); });
-
 </script>
 </body>
 </html>
