@@ -130,8 +130,7 @@
     /* Simulation panel */
 
     .btn-simulate {
-      margin-top: 1.5rem;
-      display: none;
+      margin-top: 0;
       background: transparent;
       border: 1px solid var(--gold-dim);
       border-radius: 4px;
@@ -146,7 +145,41 @@
       transition: background 0.15s, color 0.15s;
     }
     .btn-simulate:hover { background: var(--gold); color: #0c0c0d; }
-    .btn-simulate.visible { display: inline-block; }
+
+
+    .sim-controls {
+      display: none;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .sim-controls.visible { display: flex; }
+    .sim-threshold-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: #c8b878;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .sim-threshold-wrap input[type=number] {
+      width: 72px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+      text-align: right;
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+    .sim-threshold-wrap input[type=number]::-webkit-inner-spin-button,
+    .sim-threshold-wrap input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .sim-threshold-wrap input[type=number]:focus { outline: none; border-color: var(--gold-dim); }
 
     .sim-panel { margin-top: 2rem; opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; }
     .sim-panel.visible { opacity: 1; transform: none; }
@@ -318,7 +351,13 @@
   <div class="formula" id="formula"></div>
 
   <!-- Simulation -->
-  <button class="btn-simulate" id="btn-simulate" onclick="triggerSimulation()">▶ Run Simulation</button>
+  <div class="sim-controls" id="sim-controls">
+    <div class="sim-threshold-wrap">
+      <label for="sim-threshold">Stopping EV Threshold</label>
+      <input type="number" id="sim-threshold" min="0" step="0.01" placeholder="1.00">
+    </div>
+    <button class="btn-simulate" id="btn-simulate" onclick="triggerSimulation()">▶ Run Simulation</button>
+  </div>
   <div class="sim-panel" id="sim-panel"></div>
 
 </div>
@@ -335,7 +374,7 @@
   let parsedInstantWins = [];
 
   // ── Simulation ──
-  function runSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase) {
+  function runSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold) {
     const N_SIMS = 2000;
     const remaining = totalTickets - ticketsSold; // prizes only exist in unsold tickets
 
@@ -372,7 +411,6 @@
     // against its fair share of remaining tickets to detect when the pool has been
     // "depleted" relative to what you'd expect — i.e. you got lucky early.
     // For zone 3: always buy max (illustrative — show risk profile regardless).
-    const evThreshold = (zone === 3) ? 0 : 1;
 
 
     for (let sim = 0; sim < N_SIMS; sim++) {
@@ -412,7 +450,7 @@
     return { profits, returns, effectiveCost, evThreshold, costOffset };
   }
 
-  function renderSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase) {
+  function renderSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold) {
     const panel = $('sim-panel');
     panel.innerHTML = `
       <div class="section-label">Simulation (${(2000).toLocaleString()} runs)</div>
@@ -424,7 +462,7 @@
 
     // Use setTimeout to let the spinner render before blocking
     setTimeout(() => {
-      const sim = runSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase);
+      const sim = runSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold);
 
       if (!sim) {
         panel.innerHTML = '';
@@ -596,7 +634,7 @@
       }
     }
 
-    const hasInstantWins = iwval > 0 && parsedInstantWins.length > 0;
+    const hasInstantWins = parsedInstantWins.length > 0;
     if (hasInstantWins) {
       _simArgs = { prizes: parsedInstantWins, totalTickets: total, ticketsSold: sold, ticketCost: cost, maxTickets, zone, endPrize: endprize, Tbase };
     } else {
@@ -626,7 +664,10 @@
 
       // Show sim button if instant wins available
       if (hasInstantWins) {
-        showSimButton(true);
+        // Default threshold: starting EV minus 10%, rounded up to 2dp
+        const startingEV = iwEvPerTicket / cost + (endprize > 0 ? endprize / ((Tbase + 1) * cost) : 0);
+        const zone3Threshold = Math.ceil((startingEV * 0.9) * 100) / 100;
+        showSimButton(true, zone3Threshold);
       } else {
         showSimButton(false);
       }
@@ -760,7 +801,7 @@
     // Zone 3: handled above (simulate if instant wins)
     if (zone === 1 || (zone === 2 && !zone2EndOnly)) {
       if (hasInstantWins) {
-        showSimButton(true);
+        showSimButton(true, 1.0);
       } else {
         showSimButton(false);
       }
@@ -773,13 +814,16 @@
   // Simulation state — stored so button can re-use current values
   let _simArgs = null;
 
-  function showSimButton(show) {
-    const btn = $('btn-simulate');
-    const panel = $('sim-panel');
+  function showSimButton(show, defaultThreshold) {
+    const controls = $('sim-controls');
+    const panel    = $('sim-panel');
     if (show) {
-      btn.classList.add('visible');
+      controls.classList.add('visible');
+      if (defaultThreshold !== undefined) {
+        $('sim-threshold').value = defaultThreshold.toFixed(2);
+      }
     } else {
-      btn.classList.remove('visible');
+      controls.classList.remove('visible');
     }
     panel.classList.remove('visible');
     panel.innerHTML = '';
@@ -788,7 +832,8 @@
   function triggerSimulation() {
     if (!_simArgs) return;
     const { prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase } = _simArgs;
-    renderSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase);
+    const evThreshold = parseFloat($('sim-threshold').value) || 0;
+    renderSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold);
   }
 
   // ── Worker URL & site discounts ──
