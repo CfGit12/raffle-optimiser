@@ -195,6 +195,7 @@
     .sim-table td { text-align: right; padding: 0.5rem 0.7rem; border-bottom: 1px solid #242428; color: #dedad0; white-space: nowrap; }
     .sim-table td:first-child { text-align: left; }
     .sim-table tr.sim-median td { background: var(--peak-bg); color: #ffe566; font-weight: 500; }
+    .sim-table tr.sim-breakeven td { background: rgba(80,180,100,0.08); color: #7ecf8e; font-weight: 500; border-top: 1px solid rgba(80,180,100,0.3); border-bottom: 1px solid rgba(80,180,100,0.3); }
     .sim-risk { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
     .sim-risk-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; }
     .sim-risk-card .card-label { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }
@@ -353,8 +354,16 @@
   <!-- Simulation -->
   <div class="sim-controls" id="sim-controls">
     <div class="sim-threshold-wrap">
+      <label for="sim-tickets">Tickets To Buy</label>
+      <input type="number" id="sim-tickets" min="1" step="1" placeholder="1000">
+    </div>
+    <div class="sim-threshold-wrap">
       <label for="sim-threshold">Stopping EV Threshold</label>
       <input type="number" id="sim-threshold" min="0" step="0.01" placeholder="1.00">
+    </div>
+    <div class="sim-threshold-wrap">
+      <label for="sim-duration">Run for (seconds)</label>
+      <input type="number" id="sim-duration" min="0.5" max="30" step="0.5" placeholder="2">
     </div>
     <button class="btn-simulate" id="btn-simulate" onclick="triggerSimulation()">▶ Run Simulation</button>
   </div>
@@ -374,12 +383,10 @@
   let parsedInstantWins = [];
 
   // ── Simulation ──
-  function runSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold) {
-    const N_SIMS = 2000;
-    const remaining = totalTickets - ticketsSold; // prizes only exist in unsold tickets
+  function runSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold, durationMs) {
+    const remaining = totalTickets - ticketsSold;
 
-    // Separate prizes into simulated (>= cost) and cost-offset (< cost)
-    // Use remaining tickets for cost offset — that's what the calculator uses
+    // Separate sub-cost prizes into cost offset
     const simPrizes = [];
     let costOffset = 0;
     for (const p of prizes) {
@@ -391,7 +398,6 @@
     }
     const effectiveCost = ticketCost - costOffset;
 
-    // Flatten simulated prizes
     const prizeValues = [];
     for (const p of simPrizes)
       for (let i = 0; i < p.count; i++) prizeValues.push(p.val);
@@ -401,21 +407,14 @@
 
     const cap = Math.min(maxTickets, remaining);
     const totalPrizeValue = prizeValues.reduce((s, v) => s + v, 0);
-    const profits = new Float64Array(N_SIMS);
-    const returns = new Float64Array(N_SIMS);
+
+    // Time-bounded simulation — run as many iterations as possible within durationMs
+    const deadline = performance.now() + durationMs;
+    const profitsBuf = [], returnsBuf = [], costsBuf = [];
     const keys = new Float64Array(nPrizes);
     const order = new Int32Array(nPrizes);
 
-    // For zones 1 & 2: stop only when a big prize has been won and the remaining
-    // prize density no longer justifies continuing. We compare remaining IW value
-    // against its fair share of remaining tickets to detect when the pool has been
-    // "depleted" relative to what you'd expect — i.e. you got lucky early.
-    // For zone 3: always buy max (illustrative — show risk profile regardless).
-
-
-    for (let sim = 0; sim < N_SIMS; sim++) {
-      // Assign prizes randomly within the REMAINING ticket pool only
-      // keys[i] is a fractional position in [0, 1) within remaining tickets
+    while (performance.now() < deadline) {
       for (let i = 0; i < nPrizes; i++) { keys[i] = Math.random(); order[i] = i; }
       order.sort((a, b) => keys[a] - keys[b]);
 
@@ -423,19 +422,14 @@
       let spent = 0, won = 0, currentTicket = 0, prizePtr = 0;
 
       while (currentTicket < cap) {
-        // EV check: compare remaining IW density + end prize against cost
-        // Stop if remaining prizes are exhausted relative to remaining tickets
-        // (i.e. you've won more than your fair share — carry on if still on track)
         const remainingTickets = remaining - currentTicket;
         const iwEV = remainingPrizeValue / (remainingTickets * effectiveCost);
         const endEV = (endPrize > 0 && Tbase > 0)
           ? endPrize / ((Tbase + currentTicket + 1) * effectiveCost)
           : 0;
-        const ev = iwEV + endEV;
-        if (ev < evThreshold) break;
+        if (iwEV + endEV < evThreshold) break;
         const batchEnd = Math.min(currentTicket + 1, cap);
         spent += effectiveCost;
-        // batchFrac is within remaining ticket pool (0..1)
         const batchFrac = batchEnd / remaining;
         while (prizePtr < nPrizes && keys[order[prizePtr]] < batchFrac) {
           const val = prizeValues[order[prizePtr++]];
@@ -444,16 +438,22 @@
         }
         currentTicket = batchEnd;
       }
-      profits[sim] = won - spent;
-      returns[sim] = won;
+      profitsBuf.push(won - spent);
+      returnsBuf.push(won);
+      costsBuf.push(spent);
     }
-    return { profits, returns, effectiveCost, evThreshold, costOffset };
+
+    const nRuns = profitsBuf.length;
+    const profits = new Float64Array(profitsBuf);
+    const returns = new Float64Array(returnsBuf);
+    const costs   = new Float64Array(costsBuf);
+    return { profits, returns, costs, nRuns, effectiveCost, evThreshold, costOffset };
   }
 
-  function renderSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold) {
+  function renderSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold, durationMs) {
     const panel = $('sim-panel');
     panel.innerHTML = `
-      <div class="section-label">Simulation (${(2000).toLocaleString()} runs)</div>
+      <div class="section-label">Simulation (running…)</div>
       <div class="sim-spinner">
         <div class="spinner-ring"></div>
         Simulating outcomes…
@@ -462,7 +462,7 @@
 
     // Use setTimeout to let the spinner render before blocking
     setTimeout(() => {
-      const sim = runSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold);
+      const sim = runSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold, durationMs);
 
       if (!sim) {
         panel.innerHTML = '';
@@ -470,7 +470,7 @@
         return;
       }
 
-      const { profits, returns, effectiveCost, costOffset } = sim;
+      const { profits, returns, costs, nRuns, effectiveCost, costOffset } = sim;
       const sortedProfits = Array.from(profits).sort((a, b) => a - b);
       const n = sortedProfits.length;
       const avg = profits.reduce((s, v) => s + v, 0) / n;
@@ -479,10 +479,10 @@
       const worst   = sortedProfits[0];
       const best    = sortedProfits[n - 1];
       // Build sorted pairs of (profit, return) for percentile display
-      const pairs = Array.from(profits).map((p, i) => ({ p, r: returns[i] })).sort((a, b) => a.p - b.p);
+      const pairs = Array.from(profits).map((p, i) => ({ p, r: returns[i], c: costs[i] })).sort((a, b) => a.p - b.p);
 
       const pcts = [10, 25, 50, 75, 90, 95, 99];
-      const pctVals = pcts.map(p => ({ pct: p, profit: pairs[Math.floor(p / 100 * n)].p, ret: pairs[Math.floor(p / 100 * n)].r }));
+      const pctVals = pcts.map(p => ({ pct: p, profit: pairs[Math.floor(p / 100 * n)].p, ret: pairs[Math.floor(p / 100 * n)].r, cost: pairs[Math.floor(p / 100 * n)].c }));
 
       let html = `<div class="section-label">Simulation (${n.toLocaleString()} runs)</div>`;
 
@@ -496,23 +496,51 @@
       html += `<div class="sim-table-wrap"><table class="sim-table">
         <thead><tr>
           <th>Percentile</th>
+          <th>Cost</th>
           <th>Return</th>
           <th>Profit</th>
         </tr></thead><tbody>`;
 
       const worstPair = pairs[0], bestPair = pairs[n-1];
-      html += `<tr><td>Worst case</td><td>${fmt(worstPair.r)}</td><td style="color:${worstPair.p<0?'#c0504d':'var(--green)'}">${fmt(worstPair.p)}</td></tr>`;
 
-      for (const { pct, profit, ret } of pctVals) {
+      // Find break-even percentile — first index where profit >= 0
+      const breakEvenIdx = pairs.findIndex(p => p.p >= 0);
+      const breakEvenPct = breakEvenIdx < 0 ? null : Math.ceil(breakEvenIdx / n * 100);
+      const breakEvenPair = breakEvenIdx >= 0 ? pairs[breakEvenIdx] : null;
+
+      html += `<tr><td>Worst case</td><td>${fmt(worstPair.c)}</td><td>${fmt(worstPair.r)}</td><td style="color:${worstPair.p<0?'#c0504d':'var(--green)'}">${fmt(worstPair.p)}</td></tr>`;
+
+      let breakEvenInserted = false;
+      for (const { pct, profit, ret, cost } of pctVals) {
+        // Insert break-even row before the first percentile that exceeds it
+        if (!breakEvenInserted && breakEvenPair && pct >= breakEvenPct) {
+          html += `<tr class="sim-breakeven">
+            <td>Break-even (${breakEvenPct}th pct)</td>
+            <td>${fmt(breakEvenPair.c)}</td>
+            <td>${fmt(breakEvenPair.r)}</td>
+            <td style="color:var(--green)">${fmt(breakEvenPair.p)}</td>
+          </tr>`;
+          breakEvenInserted = true;
+        }
         const isMedian = pct === 50;
         html += `<tr class="${isMedian ? 'sim-median' : ''}">
           <td>${pct}th percentile${isMedian ? ' (median)' : ''}</td>
+          <td>${fmt(cost)}</td>
           <td>${fmt(ret)}</td>
           <td style="color:${profit<0?'#c0504d':'var(--green)'}">${fmt(profit)}</td>
         </tr>`;
       }
+      // If break-even is above all listed percentiles, append after the last one
+      if (!breakEvenInserted && breakEvenPair) {
+        html += `<tr class="sim-breakeven">
+          <td>Break-even (${breakEvenPct}th pct)</td>
+          <td>${fmt(breakEvenPair.c)}</td>
+          <td>${fmt(breakEvenPair.r)}</td>
+          <td style="color:var(--green)">${fmt(breakEvenPair.p)}</td>
+        </tr>`;
+      }
 
-      html += `<tr><td>Best case</td><td>${fmt(bestPair.r)}</td><td style="color:var(--green)">${fmt(bestPair.p)}</td></tr>`;
+      html += `<tr><td>Best case</td><td>${fmt(bestPair.c)}</td><td>${fmt(bestPair.r)}</td><td style="color:var(--green)">${fmt(bestPair.p)}</td></tr>`;
       html += '</tbody></table></div>';
 
       html += `<div class="sim-risk">
@@ -667,7 +695,7 @@
         // Default threshold: starting EV minus 10%, rounded up to 2dp
         const startingEV = iwEvPerTicket / cost + (endprize > 0 ? endprize / ((Tbase + 1) * cost) : 0);
         const zone3Threshold = Math.ceil((startingEV * 0.9) * 100) / 100;
-        showSimButton(true, zone3Threshold);
+        showSimButton(true, zone3Threshold, Math.min(maxTickets, total - sold));
       } else {
         showSimButton(false);
       }
@@ -801,7 +829,7 @@
     // Zone 3: handled above (simulate if instant wins)
     if (zone === 1 || (zone === 2 && !zone2EndOnly)) {
       if (hasInstantWins) {
-        showSimButton(true, 1.0);
+        showSimButton(true, 1.0, Math.min(maxTickets, total - sold));
       } else {
         showSimButton(false);
       }
@@ -814,13 +842,19 @@
   // Simulation state — stored so button can re-use current values
   let _simArgs = null;
 
-  function showSimButton(show, defaultThreshold) {
+  function showSimButton(show, defaultThreshold, defaultTickets) {
     const controls = $('sim-controls');
     const panel    = $('sim-panel');
     if (show) {
       controls.classList.add('visible');
       if (defaultThreshold !== undefined) {
         $('sim-threshold').value = defaultThreshold.toFixed(2);
+      }
+      if (defaultTickets !== undefined) {
+        $('sim-tickets').value = defaultTickets;
+      }
+      if (!$('sim-duration').value) {
+        $('sim-duration').value = '2';
       }
     } else {
       controls.classList.remove('visible');
@@ -832,8 +866,12 @@
   function triggerSimulation() {
     if (!_simArgs) return;
     const { prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase } = _simArgs;
-    const evThreshold = parseFloat($('sim-threshold').value) || 0;
-    renderSimulation(prizes, totalTickets, ticketsSold, ticketCost, maxTickets, zone, endPrize, Tbase, evThreshold);
+    const evThreshold   = parseFloat($('sim-threshold').value) || 0;
+    const durationMs    = (parseFloat($('sim-duration').value) || 2) * 1000;
+    const remaining     = totalTickets - ticketsSold;
+    const simTicketsInput = parseInt($('sim-tickets').value) || maxTickets;
+    const simTickets    = Math.min(simTicketsInput, remaining);
+    renderSimulation(prizes, totalTickets, ticketsSold, ticketCost, simTickets, zone, endPrize, Tbase, evThreshold, durationMs);
   }
 
   // ── Worker URL & site discounts ──
